@@ -5,6 +5,7 @@ from arcpy import env
 
 env.workspace = r"D:/ArcGisShapesPruebas/"
 
-desc="Shape07010100100.shp"
-arcpy.Intersect_analysis (["D:/ArcGisShapesPruebas/VoronoiLine/Shape"+desc,"D:/ArcGisShapesPruebas/Edge/"+desc], "D:/ArcGisShapesPruebas/Intersections/"+desc, "", "", "point")
+#desc="Shape07010100100.shp"
+desc="Shape15013300200.shp"
+arcpy.Intersect_analysis (["D:/ArcGisShapesPruebas/WriteGeometry/"+desc,"D:/ArcGisShapesPruebas/Edge/"+desc], "D:/ArcGisShapesPruebas/IntersectionsInitial/Tolerancia"+desc, "ALL", "", "point")
 

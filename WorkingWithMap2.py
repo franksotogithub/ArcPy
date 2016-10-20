@@ -5,11 +5,13 @@ import os
 
 mxd= mapping.MapDocument(r"D:/ArcGisProgramas/prueba.mxd")
 path="D:/ArcGisPDF/prueba2.pdf"
+
+
 for el in mapping.ListDataFrames(mxd):
-    print el
+    print el.name
 
 for el in mapping.ListLayers(mxd):
-    print el
+    print el.name
 
 
 for el in mapping.ListLayoutElements(mxd):

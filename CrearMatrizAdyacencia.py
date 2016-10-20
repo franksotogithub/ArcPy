@@ -3,6 +3,8 @@ import numpy as np
 import CreateLineGeometry as c
 import ImportarExportarSQL as sql
 
+import SolucionInicial as s
+
 num_max_zonas=2
 arcpy.env.workspace="Database Connections"
 if arcpy.Exists ("Prueba6.sde")==False:
@@ -55,13 +57,14 @@ desc= arcpy.Describe("sprueba.DBO.zona_censal")
 print desc.name
 
 where_list=["150133","002"]
-where_expression=' "IDDIST"=%s AND "CODZONA"=%s ' % (where_list[0],where_list[1])
+#where_expression=' "IDDIST"=%s AND "CODZONA"=%s ' % (where_list[0],where_list[1])
 
+where_expression=' "IDDIST"=%s ' % (where_list[0])
 #IDIST='150133'
 #CODZONA='002'
 
 #arcpy.FeatureClassToFeatureClass_conversion("sprueba.DBO.zona_censal", "D:/ArcGisShapesPruebas/", 'zona_censal.shp' ,' "IDDIST" = \'150133\' ')
-arcpy.FeatureClassToFeatureClass_conversion("sprueba.DBO.zona_censal", "D:/ArcGisShapesPruebas/", 'zona_censal.shp' ,where_expression)
+arcpy.FeatureClassToFeatureClass_conversion("sprueba.DBO.zona_censal", "D:/ArcGisShapesPruebas/Zones/", 'zona_censal.shp' ,where_expression)
 
 
 #crear el shape que  va a contener toda lainformacion
@@ -106,6 +109,8 @@ if arcpy.Exists ("D:/ArcGisShapesPruebas/ShapesFinal/adyacencia.shp")==False:
                                     "ENABLED",
                                     "")
 
+    #arcpy.CreateTable_management("C:/output", "habitatTemperatures.dbf", "vegtable.dbf")
+
     fieldName1 = "FirstX"
     fieldName2 = "FirstY"
 
@@ -137,6 +142,7 @@ else:
 
 
 i=1
+
 for row  in arcpy.da.SearchCursor("D:/ArcGisShapesPruebas/Zones/zona_censal.shp", ["IDDIST","CODZONA","SUFZONA"]):
 
     desc = "Shape" + str(row[0]) + "" + str(row[1]) + "" + str(row[2])+".shp"
@@ -479,7 +485,6 @@ for row  in arcpy.da.SearchCursor("D:/ArcGisShapesPruebas/Zones/zona_censal.shp"
         cursor.insertRow(row)
     del cursor
 
-    #EJECUTANDO PROCEDIMIENTO ALMACENADO PARA CRUZAR CON LOS CENTROIDES DE LAS MANZANAS
 
 
 
@@ -492,12 +497,13 @@ for row  in arcpy.da.SearchCursor("D:/ArcGisShapesPruebas/Zones/zona_censal.shp"
     arcpy.Delete_management("D:/ArcGisShapesPruebas/VoronoiPolygon/" + desc)
     arcpy.Delete_management("D:/ArcGisShapesPruebas/VoronoiLine/" + desc)
 
-
+    #arcpy.Delete_management("D:/ArcGisShapesPruebas/ShapesFinal/" + desc)
+    #arcpy.Delete_management("D:/ArcGisShapesPruebas/ShapesFinal2/" + desc)
     arcpy.Delete_management("D:/ArcGisShapesPruebas/VoronoiSplitLine/" + desc)
     arcpy.Delete_management("D:/ArcGisShapesPruebas/Intersections/" + desc)
     arcpy.Delete_management("D:/ArcGisShapesPruebas/IntersectionsInitial/" + desc)
     arcpy.Delete_management("D:/ArcGisShapesPruebas/Edge/" + desc)
-    arcpy.Delete_management("D:/ArcGisShapesPruebas/WriteGeometry/" + desc)
+    #arcpy.Delete_management("D:/ArcGisShapesPruebas/WriteGeometry/" + desc)
     i=i+1
     if i==num_max_zonas:
         break
@@ -506,9 +512,10 @@ for row  in arcpy.da.SearchCursor("D:/ArcGisShapesPruebas/Zones/zona_censal.shp"
 arcpy.FeatureClassToGeodatabase_conversion(['D:/ArcGisShapesPruebas/ShapesFinal/adyacencia.shp'],
                                                    'Database Connections/Prueba6.sde/sprueba.DBO.prueba')
 
+
 #sql.InsertarAdyacencia()
 
-arcpy.Delete_management("D:/ArcGisShapesPruebas/ShapesFinal/adyacencia.shp")
+#arcpy.Delete_management("D:/ArcGisShapesPruebas/ShapesFinal/adyacencia.shp")
 #arcpy.Delete_management("D:/ArcGisShapesPruebas/Zones/zona_censal.shp")
 
 
