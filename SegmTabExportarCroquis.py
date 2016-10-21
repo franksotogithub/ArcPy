@@ -4,7 +4,7 @@ import shutil
 import arcpy
 
 import  UBIGEO
-#from reportlab.graphics.barcode import code39
+
 from time import time
 from datetime import *
 
@@ -170,6 +170,7 @@ def ExportarCroquisUrbanoAEU(ubigeos):
         TextElement10 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION")[0]
         TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "VIV_AEU")[0]
         TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
+        TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
 
         TextElement1.text = ubigeo[0:2]
         TextElement2.text = ubigeo[2:4]
@@ -179,6 +180,7 @@ def ExportarCroquisUrbanoAEU(ubigeos):
         TextElement10.text = seccion
         TextElement11.text = str(viv_aeu)
         TextElement12.text = str(codigo)
+        TextElement13.text = str(codigo)
 
 
         for row4 in arcpy.da.SearchCursor(ZONA_CENSAL, ['DEPARTAMEN', 'PROVINCIA', 'DISTRITO', 'NOMCCPP'],where_zona):
@@ -372,7 +374,8 @@ def ExportarCroquisUrbanoSeccion(ubigeos):
         TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_FINAL")[0]
         TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CANT_VIV")[0]
         TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
-        TextElement13.text = str(codigo)
+        TextElement14 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
+
 
         TextElement1.text = ubigeo[0:2]
         TextElement2.text = ubigeo[2:4]
@@ -383,6 +386,8 @@ def ExportarCroquisUrbanoSeccion(ubigeos):
         TextElement10.text = aeu_inicial
         TextElement11.text = aeu_final
         TextElement12.text = cant_viv
+        TextElement13.text = str(codigo)
+        TextElement14.text=str(codigo)
 
 
         for row4 in arcpy.da.SearchCursor(ZONA_CENSAL, ['DEPARTAMEN','PROVINCIA','DISTRITO','NOMCCPP'],where_expression_zona):
@@ -538,17 +543,13 @@ def ExportarCroquisUrbanoZona(ubigeos):
         TextElement7 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "NOMCCPP")[0]
         TextElement8 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "ZONA")[0]
         TextElement9 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION_INICIAL")[0]
-        TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION_FINAL")[0]
+
         TextElement10 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_INICIAL")[0]
         TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_FINAL")[0]
         TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CANT_VIV")[0]
-
-
-
+        TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION_FINAL")[0]
         TextElement14 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
-
-        TextElement14.text = str(codigo)
-
+        TextElement15 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
 
         TextElement1.text = ubigeo[0:2]
         TextElement2.text = ubigeo[2:4]
@@ -562,6 +563,8 @@ def ExportarCroquisUrbanoZona(ubigeos):
         TextElement10.text = aeu_inicial
         TextElement11.text = aeu_final
         TextElement12.text = cant_viv
+        TextElement14.text = str(codigo)
+        TextElement15.text=str(codigo)
 
         for row4 in arcpy.da.SearchCursor(ZONA_CENSAL, ['DEPARTAMEN', 'PROVINCIA', 'DISTRITO', 'NOMCCPP'], where_inicial):
             TextElement4.text = str(row4[0])

@@ -73,8 +73,8 @@ print "SegundaViviendaPorAEU"
 print datetime.today()
 
 
-AEU.CrearLineasAEUPrimeraPasada()
-print "CrearLineasAEUPrimeraPasada"
+AEU.RelacionarRutasLineasConAEUSegundaVivienda()
+print "RelacionarRutasLineasConAEUSegundaVivienda"
 print datetime.today()
 
 

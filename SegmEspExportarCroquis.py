@@ -174,6 +174,8 @@ def ExportarCroquisUrbanoAEU(ubigeos):
         TextElement10 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION")[0]
         TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "VIV_AEU")[0]
         TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
+        TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
+
 
         TextElement1.text = ubigeo[0:2]
         TextElement2.text = ubigeo[2:4]
@@ -183,7 +185,7 @@ def ExportarCroquisUrbanoAEU(ubigeos):
         TextElement10.text = seccion
         TextElement11.text = str(viv_aeu)
         TextElement12.text = str(codigo)
-
+        TextElement13.text=str(codigo)
 
         for row4 in arcpy.da.SearchCursor(ZONA_CENSAL, ['DEPARTAMEN', 'PROVINCIA', 'DISTRITO', 'NOMCCPP'],where_zona):
             TextElement4.text = str(row4[0])
@@ -362,7 +364,10 @@ def ExportarCroquisUrbanoSeccion(ubigeos):
         TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_FINAL")[0]
         TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CANT_VIV")[0]
         TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
+        TextElement14 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
+
         TextElement13.text = str(codigo)
+        TextElement14.text = str(codigo)
 
         TextElement1.text = ubigeo[0:2]
         TextElement2.text = ubigeo[2:4]
@@ -391,14 +396,6 @@ def ExportarCroquisUrbanoSeccion(ubigeos):
         arcpy.mapping.RemoveLayer(df, lyrFile3)
 
 
-
-
-#def EliminarCroquisZona():
-#    lista_directorios=os.listdir("D:/ShapesPruebasSegmentacionUrbana/ZONAS/CroquisUrbanoZona/")
-#    if len(lista_directorios)>0:
-#        for el in lista_directorios:
-#            shutil.rmtree("D:/ShapesPruebasSegmentacionUrbana/ZONAS/CroquisUrbanoZona/"+str(el))
-#
 def ExportarCroquisUrbanoZona(ubigeos):
     arcpy.env.workspace ="D:/ShapesPruebasSegmentacionUrbana"
 
@@ -415,6 +412,7 @@ def ExportarCroquisUrbanoZona(ubigeos):
     RUTAS_LINEAS = "D:/ShapesPruebasSegmentacionUrbana/AEU/CrearRepresentacionAEU/TB_RUTAS_LINEAS.shp"
     Path_inicial = "\\\srv-fileserver\\CPV2017"
     Path_urbano = Path_inicial + "\\croquis_segm_esp\\urbano"
+
 
     where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
 
@@ -522,8 +520,10 @@ def ExportarCroquisUrbanoZona(ubigeos):
         TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CANT_VIV")[0]
 
         TextElement14 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
+        TextElement15 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
 
         TextElement14.text = str(codigo)
+        TextElement15.text = str(codigo)
         TextElement1.text = ubigeo[0:2]
         TextElement2.text = ubigeo[2:4]
         TextElement3.text = ubigeo[4:6]

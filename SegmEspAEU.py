@@ -120,7 +120,6 @@ def ImportarTablasTrabajo(ubigeos):
     arcpy.AddField_management(MZS, "FLG_MZ", "SHORT")
 
 
-
 def CrearMatrizAdyacencia(ubigeos):
     arcpy.env.overwriteOutput = True
     ADYACENCIA="D:/ShapesPruebasSegmentacionUrbana/AEU/MatrizAdyacencia/adyacencia.dbf"
@@ -147,15 +146,6 @@ def CrearMatrizAdyacencia(ubigeos):
                                                   "#")
 
 
-
-    prueba = "PruebaSegmentacion.sde"
-
-
-    arcpy.env.workspace = r"Database Connections/PruebaSegmentacion.sde"
-
-
-    if arcpy.Exists(r"Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.ADYACENCIA"):
-        arcpy.Delete_management("Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.adyacencia")
 
 
 
@@ -453,21 +443,27 @@ def CrearMatrizAdyacencia(ubigeos):
         arcpy.Delete_management("in_memory/VoronoiLine" + desc)
 
 
+def ExportarTablasAdyacencia():
+    arcpy.env.overwriteOutput = True
+    ADYACENCIA = "D:/ShapesPruebasSegmentacionUrbana/AEU/MatrizAdyacencia/adyacencia.dbf"
+    MZS = "D:/ShapesPruebasSegmentacionUrbana/AEU/EnumerarAEUViviendas/TB_MZS.shp"
+    arcpy.env.workspace = r"Database Connections/PruebaSegmentacion.sde"
+
+    if arcpy.Exists(r"Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.ADYACENCIA"):
+        arcpy.Delete_management("Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.adyacencia")
+
+    if arcpy.Exists(r"Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.TB_MZS_TRABAJO"):
+        arcpy.Delete_management("Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.TB_MZS_TRABAJO")
 
     arcpy.TableToTable_conversion(ADYACENCIA,
                                   'Database Connections/PruebaSegmentacion.sde/', 'adyacencia')
     MZS_TRABAJO = "D:/ShapesPruebasSegmentacionUrbana/AEU/EnumerarAEUViviendas/TB_MZS_TRABAJO.shp"
 
-
-
-    if arcpy.Exists(r"Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.TB_MZS_TRABAJO"):
-        arcpy.Delete_management("Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.TB_MZS_TRABAJO")
-
-
     arcpy.CopyFeatures_management(MZS,MZS_TRABAJO)
 
     arcpy.FeatureClassToGeodatabase_conversion([MZS_TRABAJO],
                                                'Database Connections/PruebaSegmentacion.sde/')
+
 
 def CrearViviendasOrdenadas():
     arcpy.env.overwriteOutput = True
@@ -645,16 +641,13 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
     ZONA_AEU_MAX = "D:/ShapesPruebasSegmentacionUrbana/AEU/EnumerarAEUViviendas/ZONA_AEU_MAX"
     where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
 
-
-
     if arcpy.Exists(ZONA_AEU_MAX):
         arcpy.Delete_management(ZONA_AEU_MAX)
 
 
     where_expression_l=" FLG_MZ=1 "
 
-    #where_expression_l = "FLG_MZ=1"
-
+    #############se obtiene una estadistica del maximo aeu por zona que ya ha sido asignada a las manzanas con mas de 16 viv##########################
     arcpy.MakeFeatureLayer_management(VIVIENDAS_ORDENADAS, "viviendas_ordenadas_2", where_expression_l)
 
     arcpy.Statistics_analysis("viviendas_ordenadas_2",ZONA_AEU_MAX, [["AEU", "MAX"]],
@@ -662,32 +655,42 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
 
 
 
-
+    ##############################se hace un bucle a cada zona######################################
     for row  in arcpy.da.SearchCursor(ZONAS, ["UBIGEO","ZONA"],where_expression):
 
         where_expressionx = "UBIGEO=\'" + str(row[0]) + "\' AND ZONA=\'" + str(row[1]) + "\' "
 
         aeu_max=0
+
+
+        #####################################Bucle para obtener el numero de aue maximo de la zona###########################
         for row_aeu in arcpy.da.SearchCursor(ZONA_AEU_MAX, ["UBIGEO", "ZONA", "MAX_AEU"], where_expressionx):
             aeu_max=int(row_aeu[2])
 
         where_expression1 = "UBIGEO=\'" + str(row[0]) + "\' AND ZONA=\'" + str(row[1]) + "\'  AND VIV_MZ<=16 "
 
 
-        #numero_aeu_max = int(row[2])
-        nuevo_aeu=0
 
+        ####################################Se revisa la tabla MZS  para obtener el ID de manzana#############################
+
+        nuevo_aeu=0
+        aeu_anterior=0
+        usolocal = 0
+        or_viv_aeu=0
         with arcpy.da.UpdateCursor(MZS, ["UBIGEO", "ZONA", "MANZANA", "IDMANZANA", "VIV_MZ","AEU","AEU_2"], where_expression1) as  cursor1:
             for row1 in cursor1:
 
                 nuevo_aeu = int(row1[5]) + aeu_max
+                row1[6]=nuevo_aeu  ###########se actualiza el nuevo aeu
 
-                row1[6]=nuevo_aeu
-
+                ###############se prepara la expresion para obtener las viviendas de esa  manzana#####################################
                 where_expression2 = "UBIGEO=\'" + str(row1[0]) + "\' AND ZONA=\'" + str(row1[1]) + "\'  AND MANZANA=\'"+str(row1[2])+"\' "
 
-                or_viv_aeu=1
-                usolocal=0
+
+                if aeu_anterior!=nuevo_aeu: #######si el aeu anterior es diferente del nuevo aeu, el orden de vivenda empieza en 1###############
+                    or_viv_aeu=1
+                    aeu_anterior=nuevo_aeu
+
                 with arcpy.da.UpdateCursor(VIVIENDAS_ORDENADAS, ["AEU","OR_VIV_AEU","USOLOCAL","COND_USOLO"],where_expression2) as cursor2:
                     for row2 in cursor2:
                         row2[0]=nuevo_aeu
@@ -818,6 +821,100 @@ def CrearMZS_AEU(ubigeos):
     arcpy.DeleteField_management(MZS_MENORES_16, ['FID_','FREQUENCY','COUNT_MANZANA','VIV_MZ','AEU_2'])
     arcpy.Merge_management([MZS_AEU_1, MZS_MENORES_16],MZS_AEU_2 )
     arcpy.Sort_management(MZS_AEU_2, MZS_AEU, ["UBIGEO","CODCCPP","ZONA","FALSO_COD","AEU"])
+
+
+
+def PrimeraPuertaPorAEU():
+    TB_VIVIENDAS_ORDENADAS_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\EnumerarAEUViviendas\\TB_VIVIENDAS_ORDENADAS.shp"
+    TB_VIVIENDAS_SELECT2_SORT_La = "TB_VIVIENDAS_SELECT1_SORT_La"
+    TB_VIVIENDAS_ESCOGIDAS__4_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
+    TB_VIVIENDAS_SELECT2_SORT = "in_memory\\TB_VIVIENDAS_SELECT1_SORT"
+    TB_VIVIENDAS_SEGUNDA_VIVIENDA__3_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
+    TB_VIVIENDAS_ESCOGIDAS__3_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
+    TB_VIVIENDAS_SEGUNDA_VIVIENDA__4_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
+    TB_VIVIENDAS_SEGUNDAS_ESCOGIDAS = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
+    TB_VIVIENDAS_SELECT2__2_ = "in_memory\\TB_VIVIENDAS"
+    TB_VIVIENDAS = "in_memory\\TB_VIVIENDAS"
+    TB_VIVIENDAS_SELECT2_SORT_La__2_ = "TB_VIVIENDAS_SELECT1_SORT_La"
+    TB_PRIMERA_PUERTA_AEU_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_PRIMERA_PUERTA_AEU.shp"
+
+    if arcpy.Exists(TB_PRIMERA_PUERTA_AEU_shp):
+        arcpy.Delete_management(TB_PRIMERA_PUERTA_AEU_shp)
+
+
+    #where="(\"USOLOCAL\"=1 OR \"USOLOCAL\"=3 OR (\"USOLOCAL\"=6 AND (\"COND_USOLO\"=1 OR \"COND_USOLO\"=3 ))) AND FLG_MZ=1"
+    where=" FLG_MZ=1"
+    # Process: Select (2)
+    arcpy.Select_analysis(TB_VIVIENDAS_ORDENADAS_shp, TB_VIVIENDAS,
+                          where)
+
+    # Process: Delete Identical
+    arcpy.DeleteIdentical_management(TB_VIVIENDAS, "Shape", "", "0")
+
+    # Process: Sort
+    arcpy.Sort_management(TB_VIVIENDAS_SELECT2__2_, TB_VIVIENDAS_SELECT2_SORT,
+                          "UBIGEO ASCENDING;ZONA ASCENDING;AEU ASCENDING;ID_REG_OR ASCENDING", "UR")
+
+    # Process: Make Feature Layer
+    arcpy.MakeFeatureLayer_management(TB_VIVIENDAS_SELECT2_SORT, TB_VIVIENDAS_SELECT2_SORT_La, "", "",
+                                      "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;ID ID VISIBLE NONE;UBIGEO UBIGEO VISIBLE NONE;CODCCPP CODCCPP VISIBLE NONE;ZONA ZONA VISIBLE NONE;MANZANA MANZANA VISIBLE NONE;NOMCCPP NOMCCPP VISIBLE NONE;DEPARTAMEN DEPARTAMEN VISIBLE NONE;PROVINCIA PROVINCIA VISIBLE NONE;DISTRITO DISTRITO VISIBLE NONE;AREA AREA VISIBLE NONE;FRENTE_ORD FRENTE_ORD VISIBLE NONE;ID_REG_OR ID_REG_OR VISIBLE NONE;EDIFICACIO EDIFICACIO VISIBLE NONE;USOLOCAL USOLOCAL VISIBLE NONE;COND_USOLO COND_USOLO VISIBLE NONE;AEU AEU VISIBLE NONE;OR_VIV_AEU OR_VIV_AEU VISIBLE NONE;FLG_CORTE FLG_CORTE VISIBLE NONE;FLG_MZ FLG_MZ VISIBLE NONE;FEAT_SEQ FEAT_SEQ VISIBLE NONE")
+
+    # Process: Summary Statistics
+    arcpy.Statistics_analysis(TB_VIVIENDAS_SELECT2_SORT, TB_VIVIENDAS_SEGUNDAS_ESCOGIDAS, "FID FIRST",
+                              "UBIGEO;CODCCPP;ZONA;AEU")
+
+    # Process: Add Field (3)
+    arcpy.AddField_management(TB_VIVIENDAS_SEGUNDAS_ESCOGIDAS, "ID_SEG", "SHORT", "", "", "", "", "NULLABLE",
+                              "NON_REQUIRED", "")
+
+    # Process: Calculate Field (2)
+    arcpy.CalculateField_management(TB_VIVIENDAS_SEGUNDA_VIVIENDA__4_, "ID_SEG", "[FIRST_FID]", "VB", "")
+
+    # Process: Add Field (4)
+    arcpy.AddField_management(TB_VIVIENDAS_ESCOGIDAS__3_, "flg_escogido", "SHORT", "", "", "", "", "NULLABLE",
+                              "NON_REQUIRED", "")
+
+    # Process: Calculate Field (5)
+    arcpy.CalculateField_management(TB_VIVIENDAS_SEGUNDA_VIVIENDA__3_, "FLG_ESCOGIDO", "1", "VB", "")
+
+    # Process: Add Join (2)
+    arcpy.AddJoin_management(TB_VIVIENDAS_SELECT2_SORT_La, "FID", TB_VIVIENDAS_ESCOGIDAS__4_, "ID_SEG", "KEEP_ALL")
+
+    # Process: Select (3)
+    arcpy.Select_analysis(TB_VIVIENDAS_SELECT2_SORT_La__2_, TB_PRIMERA_PUERTA_AEU_shp, "\"flg_escogido\"=1")
+
+    # Process: Add Field
+    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "UBIGEO", "TEXT")
+    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "CODCCPP", "TEXT")
+    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "ZONA", "TEXT")
+    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "MANZANA", "TEXT")
+    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "AEU", "SHORT")
+
+
+    # Process: Calculate Field
+    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "UBIGEO",
+                                    "[TB_VIVIE_1]", "VB", "")
+    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "CODCCPP",
+                                    "[TB_VIVIE_2]", "VB", "")
+
+    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "ZONA",
+                                    "[TB_VIVIE_3]", "VB", "")
+    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "MANZANA",
+                                    "[TB_VIVIE_4]", "VB", "")
+    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "AEU",
+                                    "[TB_VIVI_16]", "VB", "")
+
+
+    field_delete=""
+
+
+    for i in range(1,10):
+        field_delete=";TB_VIVIE_"+str(i)+field_delete
+    for j in range(10, 30):
+        field_delete = ";TB_VIVI_" + str(j) + field_delete
+    arcpy.DeleteField_management(TB_PRIMERA_PUERTA_AEU_shp,"TB_VIVIEND"+field_delete)
+
+
 
 def PrimeraViviendaPorAEU():
     TB_VIVIENDAS_ORDENADAS_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\EnumerarAEUViviendas\\TB_VIVIENDAS_ORDENADAS.shp"
@@ -1041,9 +1138,7 @@ def CrearRutasPreparacion():
     codeblock = """def flg_manzana(VIV_MZ):\n  if (VIV_MZ>16):\n    return 1\n  else:\n    return 0"""
 
     arcpy.CalculateField_management(MZS, "FLG_MZ", expression_2, "PYTHON_9.3", codeblock)
-
-
-    arcpy.Buffer_analysis(TB_MZS_shp, TB_MZS_TRABAJO_BUFFER_shp, "0.3 Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
+    arcpy.Buffer_analysis(TB_MZS_shp, TB_MZS_TRABAJO_BUFFER_shp, "0.31 Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
 
     # Process: Feature To Line
 
@@ -1058,7 +1153,7 @@ def CrearRutasPreparacion():
     # arcpy.Merge_management("'D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp';'D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp';'D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp'", PUNTOS_INICIO_shp, "IDMANZANA \"IDMANZANA\" true true false 15 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,IDMANZANA,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,IDMANZANA,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,IDMANZANA,-1,-1;OBJECTID \"OBJECTID\" true true false 10 Long 0 10 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,OBJECTID,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,OBJECTID,-1,-1;ORIG_FID \"ORIG_FID\" true true false 10 Long 0 10 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,ORIG_FID,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,ORIG_FID,-1,-1;NEAR_FID \"NEAR_FID\" true true false 10 Long 0 10 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,NEAR_FID,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,NEAR_FID,-1,-1;NEAR_DIST \"NEAR_DIST\" true true false 19 Double 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,NEAR_DIST,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,NEAR_DIST,-1,-1;NEAR_FC \"NEAR_FC\" true true false 254 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,NEAR_FC,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,NEAR_FC,-1,-1;idmax \"idmax\" true true false 254 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,idmax,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,idmax,-1,-1;MIN_NEAR_D \"MIN_NEAR_D\" true true false 19 Double 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,MIN_NEAR_D,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,MIN_NEAR_D,-1,-1;MODIF \"MODIF\" true true false 5 Short 0 5 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_110204.shp,MODIF,-1,-1,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIAL\\P_021806.shp,MODIF,-1,-1;UBIGEO \"UBIGEO\" true true false 6 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,UBIGEO,-1,-1;CODCCPP14 \"CODCCPP14\" true true false 4 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,CODCCPP14,-1,-1;MZ_T \"MZ_T\" true true false 4 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,MZ_T,-1,-1;CCDD \"CCDD\" true true false 2 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,CCDD,-1,-1;CCPP \"CCPP\" true true false 2 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,CCPP,-1,-1;CCDI \"CCDI\" true true false 2 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,CCDI,-1,-1;ZONA \"ZONA\" true true false 5 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,ZONA,-1,-1;MANZANA \"MANZANA\" true true false 4 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,MANZANA,-1,-1;CODCCPP \"CODCCPP\" true true false 4 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,CODCCPP,-1,-1;NOMCCPP \"NOMCCPP\" true true false 60 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,NOMCCPP,-1,-1;DEPARTAMEN \"DEPARTAMEN\" true true false 50 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,DEPARTAMEN,-1,-1;PROVNCIA \"PROVNCIA\" true true false 50 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,PROVNCIA,-1,-1;DISTRITO \"DISTRITO\" true true false 50 Text 0 0 ,First,#,D:\\ShapesPruebasSegmentacionUrbana\\RutasTratamiento\\PUNTO INICIO CARHUAZ\\PUNTO INICIO CARHUAZ.shp,DISTRITO,-1,-1")
 
     # Process: Buffer (2)
-    arcpy.Buffer_analysis(PUNTOS_INICIO_shp, PUNTOINICIO_BUFFER_shp, "0.31 Meters", "FULL", "ROUND", "NONE", "",
+    arcpy.Buffer_analysis(PUNTOS_INICIO_shp, PUNTOINICIO_BUFFER_shp, "0.6 Meters", "FULL", "ROUND", "NONE", "",
                           "PLANAR")
 
     # Process: Erase
@@ -1080,7 +1175,9 @@ def CrearRutasPreparacion():
     # Process: Multipart To Singlepart
     arcpy.MultipartToSinglepart_management(TB_RUTAS_DISSOLVE_ERASE_shp, TB_RUTAS_PREPARACION_shp)
 
-def CrearLineasAEUPrimeraPasada():
+
+##############Relacionando Rutas de Lineas con AEU usando la segunda vivienda de cada AEU############################
+def RelacionarRutasLineasConAEUSegundaVivienda():
     TB_SEGUNDA_VIVIENDA_AEU_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_SEGUNDA_VIVIENDA_AEU.shp"
     TB_RUTAS_PREPARACION_shp__3_ = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_PREPARACION.shp"
     TB_RUTAS_Layer__2_ = "TB_RUTAS_Layer"
@@ -1149,6 +1246,53 @@ def CrearLineasAEUPrimeraPasada():
 
 
     arcpy.DeleteField_management(TB_RUTAS_1_shp,"TB_RUTAS_P"+field_delete+";TB_INT_RUT"+field_delete2)
+
+
+##############Relacionando Rutas de Lineas con AEU usando la primera vivienda de cada AEU############################
+def RelacionarRutasLineasConAEUPrimeraPuerta():
+    arcpy.env.overwriteOutput = True
+
+
+    TB_RUTAS_1_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1.shp"
+    TB_INTERSECT_RUTAS_PRIMERA_PUERTA = "in_memory\\TB_INTERSECT_RUTAS_PRIMERA_PUERTA"
+    TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX = "in_memory\\TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX"
+    TB_RUTAS_1_Layer = "TB_RUTAS_1"
+    TB_RUTAS_1_PRIMERA_PUERTA_shp="D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1_PRIMERA_PUERTA.shp"
+    TB_RUTAS_1_shp_DISSOLVE="in_memory\\TB_RUTAS_1_shp_DISSOLVE"
+
+    arcpy.MakeFeatureLayer_management(TB_RUTAS_1_shp,TB_RUTAS_1_Layer, "\"AEU\"=0")
+
+
+
+    arcpy.Intersect_analysis(
+        "TB_RUTAS_1 #;D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_PRIMERA_PUERTA_AEU.shp #",
+        TB_INTERSECT_RUTAS_PRIMERA_PUERTA, "ALL", "0.35 Meters", "INPUT")
+    # Process: Summary Statistics (3)
+    arcpy.Statistics_analysis(TB_INTERSECT_RUTAS_PRIMERA_PUERTA, TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX, "AEU_1 MAX",
+                              "FID_TB_RUTAS_1")
+
+    # Process: Add Join
+    arcpy.AddJoin_management(TB_RUTAS_1_Layer, "FID", TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX, "FID_TB_RUTAS_1",
+                             "KEEP_ALL")
+
+
+
+    # Process: Copy Features (2)
+    arcpy.CopyFeatures_management(TB_RUTAS_1_Layer, TB_RUTAS_1_PRIMERA_PUERTA_shp, "", "0", "0", "0")
+
+    #######ACTUALIZANDO EN TB_RUTAS_1 El aeu correcto#################################
+    for row in  arcpy.da.SearchCursor(TB_RUTAS_1_PRIMERA_PUERTA_shp, ['TB_INT_R_1', 'TB_INT_R_3']):  #'TB_INT_R_1' es el FID (identificador) del segmento rutas y 'TB_INT_R_3' es el aeu que se va a pegar al segemnto ruta
+
+        where='FID='+str(row[0])
+        numero_aeu=int(row[1])
+        with arcpy.da.UpdateCursor(TB_RUTAS_1_shp, ['AEU'], where) as cursor2:
+            for row2 in cursor2:
+                row2[0] = int(numero_aeu)
+                cursor2.updateRow(row2)
+        del cursor2
+
+    arcpy.Dissolve_management(TB_RUTAS_1_shp,TB_RUTAS_1_shp_DISSOLVE,['UBIGEO','CODCCPP','ZONA','MANZANA','AEU','FLG_MZ'])
+    arcpy.CopyFeatures_management(TB_RUTAS_1_shp_DISSOLVE,TB_RUTAS_1_shp)
 
 def ActualizarRutasViviendasMenoresIguales16():
     TB_RUTAS_1_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1.shp"
@@ -1874,7 +2018,6 @@ def CrearTB_AEUS():
     arcpy.DeleteField_management(AEUS_LINEAS, ["SUM_CANT_V"])
     #arcpy.DeleteField_management(AEUS_LINEAS, ["SUM_CANT_V"])
 
-
 def CrearMarcosCroquis(ubigeos):
     env.overwriteOutput = True
     arcpy.env.workspace ="D:/ShapesPruebasSegmentacionUrbana"
@@ -1965,6 +2108,7 @@ def CrearMarcosCroquis(ubigeos):
             continue
     calculate_expression4 ="[UBIGEO]&[ZONA]&[AEU_FINAL]"
     arcpy.CalculateField_management(MARCOS_FINAL, "ID_MAPA", calculate_expression4,"VB")
+
 
 def ModelarTablas(ubigeos):
     AEUS = "D:/ShapesPruebasSegmentacionUrbana/AEU/Renumerar/TB_AEUS.dbf"
@@ -2065,6 +2209,7 @@ def ModelarTablas(ubigeos):
     expression = "str(!UBIGEO!)+str(!CODCCPP!)+str(!ZONA!)+str(!SECCION!)"
 
     arcpy.CalculateField_management(SECCIONES, "LLAVE_SECC", expression, "PYTHON_9.3")
+
 
 #def EliminarRegistros(ubigeos):
 #    arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
@@ -2241,8 +2386,8 @@ def InsertarRegistros(ubigeos):
 #print "SegundaViviendaPorAEU"
 #print datetime.today()
 #
-#CrearLineasAEUPrimeraPasada()
-#print "CrearLineasAEUPrimeraPasada"
+#RelacionarRutasLineasConAEUSegundaVivienda()
+#print "RelacionarRutasLineasConAEUSegundaVivienda"
 #print datetime.today()
 ####
 #ActualizarRutasViviendasMenoresIguales16()
@@ -2327,3 +2472,24 @@ def InsertarRegistros(ubigeos):
 #"050601"]
 #conx.LimpiarRegistrosSegmentacionEspUbigeo(ubigeos)
 #InsertarRegistros(ubigeos)
+
+
+
+
+
+
+
+#
+#def PruebaViviendas():
+#    arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
+#    VIV="Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.dbo.TB_VIVIENDA_U"
+#    arcpy.CalculateField_management(VIV, "OR_VIV_AEU", "0")
+
+    #arcpy.AddField_management(MZS, "AEU", "SHORT")
+
+
+
+
+
+#def PruebaViviendas2():
+
