@@ -185,7 +185,20 @@ def ActualizarEstadoAEUSegmEsp(ubigeos):
         conn.commit()
     conn.close()
 
+def ActualizarEstadoAEUSegmTab(ubigeos):
+    server = "192.168.200.250"
+    user = "sde"
+    password = "$deDEs4Rr0lLo"
+    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+    cursor = conn.cursor()
 
+    for row in ubigeos:
+        sql_query="""
+        exec ACTUALIZAR_ESTADO_AEU_SEGM_TAB '{ubigeo}','{zona}'
+        """.format(ubigeo=str(row),zona="99999")
+        cursor.execute(sql_query)
+        conn.commit()
+    conn.close()
 #cursor.executemany(
 #    "INSERT INTO persons VALUES (%d, %s, %s)",
 #    [(1, 'John Smith', 'John Doe'),

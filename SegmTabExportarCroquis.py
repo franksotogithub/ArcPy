@@ -154,7 +154,7 @@ def ExportarCroquisUrbanoAEU(ubigeos):
         ubigeo = str(row[0])
         zona = UBIGEO.EtiquetaZona(str(row[1]))
 
-        codigo = str(row[0]) + str(row[1]) + seccion + str(row[2])
+        codigo = str(row[0]) + str(row[1]) + seccion + aeu
 
 
         TextElement1 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCDD")[0]
