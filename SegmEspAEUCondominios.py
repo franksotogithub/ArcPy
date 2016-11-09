@@ -80,9 +80,9 @@ def ImportarTablasTrabajo(ubigeos):
     arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
 
     where_expression=UBIGEO.ExpresionUbigeosImportacion(ubigeos)
-    arcpy.FeatureClassToFeatureClass_conversion("CPV_SEGMENTACION.dbo.TB_MZS",
-                                                "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/",
-                                                'TB_MZS.shp',where_expression)
+    #arcpy.FeatureClassToFeatureClass_conversion("CPV_SEGMENTACION.dbo.TB_MZS",
+    #                                            "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/",
+    #                                            'TB_MZS.shp',where_expression)
 
 
     arcpy.Select_analysis("CPV_SEGMENTACION.dbo.TB_PUNTO_INICIO",
