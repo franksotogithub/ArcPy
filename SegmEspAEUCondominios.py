@@ -80,9 +80,9 @@ def ImportarTablasTrabajo(ubigeos):
     arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
 
     where_expression=UBIGEO.ExpresionUbigeosImportacion(ubigeos)
-    #arcpy.FeatureClassToFeatureClass_conversion("CPV_SEGMENTACION.dbo.TB_MZS",
-    #                                            "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/",
-    #                                            'TB_MZS.shp',where_expression)
+    arcpy.FeatureClassToFeatureClass_conversion("CPV_SEGMENTACION.dbo.TB_MZS",
+                                                "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/",
+                                                'TB_MZS.shp',where_expression)
 
 
     arcpy.Select_analysis("CPV_SEGMENTACION.dbo.TB_PUNTO_INICIO",
@@ -474,8 +474,7 @@ def CrearViviendasOrdenadas():
     if arcpy.Exists(VIVIENDAS_ORDENADAS):
         arcpy.Delete_management(VIVIENDAS_ORDENADAS)
 
-    arcpy.Sort_management(VIVIENDAS, VIVIENDAS_ORDENADAS, ["UBIGEO", "ZONA", "MANZANA", "ID_REG_OR"])
-
+    arcpy.Sort_management(VIVIENDAS, VIVIENDAS_ORDENADAS, ["UBIGEO", "ZONA", "MANZANA","P19A" ,"ID_REG_OR"])
     arcpy.AddField_management(VIVIENDAS_ORDENADAS, "AEU", "SHORT")
     arcpy.AddField_management(VIVIENDAS_ORDENADAS, "OR_VIV_AEU", "SHORT")
     arcpy.AddField_management(VIVIENDAS_ORDENADAS, "FLG_CORTE", "SHORT")
@@ -964,7 +963,7 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
                 where_expression2 = "UBIGEO=\'" + str(row1[0]) + "\' AND ZONA=\'" + str(row1[1]) + "\'  AND MANZANA=\'"+str(row1[2])+"\' "
 
 
-                if aeu_anterior!=nuevo_aeu: #######si el aeu anterior es diferente del nuevo aeu, el orden de vivenda empieza en 1###############
+                if (aeu_anterior!=nuevo_aeu): #######si el aeu anterior es diferente del nuevo aeu, el orden de vivenda empieza en 1###############
                     or_viv_aeu=1
                     aeu_anterior=nuevo_aeu
 
@@ -974,11 +973,9 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
                         row2[4]=nuevo_aeu
                         usolocal=int(row2[7])
 
-
                         if (usolocal in [1, 3]):
                             row2[5] = or_viv_aeu
                             or_viv_aeu=or_viv_aeu+1
-
 
                         cursor2.updateRow(row2)
 

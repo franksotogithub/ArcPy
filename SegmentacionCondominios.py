@@ -11,19 +11,17 @@ from datetime import *
 import UBIGEO
 
 def Importar_Tablas(ubigeos):
-
-
-
     #conx.ActualizarCantViviendasMzs(ubigeos)
-    #conx.ActualizarCantViviendasMzsCondominios(ubigeos)
-    #print datetime.today()
+    conx.ActualizarCantViviendasMzsCondominios(ubigeos)
+    print datetime.today()
     #print "ActualizarCantViviendasMzs"
     #print datetime.today()
+    #
     #conx.ActualizarCampoMzCondominio(ubigeos)
+    
     SegmEspAEUCondominios.ImportarTablasTrabajo(ubigeos)
     print "ImportarTablasTrabajo"
     print datetime.today()
-
 
 def SegmentacionEspacial(ubigeos):
     Ruta = "D:\ShapesPruebasSegmentacionUrbanaCondominios\AEU\MatrizAdyacencia"
@@ -212,148 +210,141 @@ def ExportarSegmEsp(ubigeos):
         #CroquisEsp.ExportarCroquisUrbanoZona([ubigeo])
 
 
+
+
 ubigeos=["150116",
+
 ]
 
-
-data=[
-#['150116','00100'],
-['150116','00200'],
-['150116','00400'],
-#['150116','00500'],
-]
-campos=['UBIGEO','ZONA']
-
-
-
-#Importar_Tablas(ubigeos)
-#Ruta = "D:\ShapesPruebasSegmentacionUrbanaCondominios\AEU\MatrizAdyacencia"
-#Lista_adyacencia = "lista_adyacencia.dbf"
-##print datetime.today()
+#data=[
+##['150116','00100'],
+#['150116','00200'],
+#['150116','00400'],
+##['150116','00500'],
+#]
+#campos=['UBIGEO','ZONA']
 #
-#SegmEspAEUCondominios.CrearMatrizAdyacencia(ubigeos)
-#print "CrearMatrizAdyacencia"
-#print datetime.today()
 #
-#SegmEspAEUCondominios.ExportarTablasAdyacencia()
-#print "ExportarTablasAdyacencia"
-#print datetime.today()
-###
-#conx.InsertarAdyacencia()
-#print "InsertarAdyacencia"
-#print datetime.today()
-#ie.Importar_Lista_ADYACENCIA(Ruta, Lista_adyacencia)
-#print "ImportarAdyacencia"
-#print datetime.today()
-###
-###
+
+Importar_Tablas(ubigeos)
+Ruta = "D:\ShapesPruebasSegmentacionUrbanaCondominios\AEU\MatrizAdyacencia"
+Lista_adyacencia = "lista_adyacencia.dbf"
+print datetime.today()
+#
+SegmEspAEUCondominios.CrearMatrizAdyacencia(ubigeos)
+print "CrearMatrizAdyacencia"
+print datetime.today()
+##
+SegmEspAEUCondominios.ExportarTablasAdyacencia()
+print "ExportarTablasAdyacencia"
+print datetime.today()
+
+
+####conx.InsertarAdyacencia()
+print "InsertarAdyacencia"
+print datetime.today()
+ie.Importar_Lista_ADYACENCIA(Ruta, Lista_adyacencia)
+print "ImportarAdyacencia"
+print datetime.today()
+#
 ##
 ##
-#SegmEspAEUCondominios.CrearViviendasOrdenadas()
-#print "CrearViviendasOrdenadas"
-#print datetime.today()
-#SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos)
-#print "EnumerarAEUEnViviendasDeManzanasCantVivMayores16"
-#print datetime.today()
-#SegmEspAEUCondominios.AgruparManzanasCantVivMenoresIguales16(ubigeos)
-#print "AgruparManzanasCantVivMenoresIguales16"
-#print datetime.today()
-#SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos)
-#print "EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16"
-#print datetime.today()
-#SegmEspAEUCondominios.CrearMZS_AEU(ubigeos)
-#print "CrearMZS_AEU"
-#print datetime.today()
+SegmEspAEUCondominios.CrearViviendasOrdenadas()
+print "CrearViviendasOrdenadas"
+print datetime.today()
+SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos)
+print "EnumerarAEUEnViviendasDeManzanasCantVivMayores16"
+print datetime.today()
+SegmEspAEUCondominios.AgruparManzanasCantVivMenoresIguales16(ubigeos)
+print "AgruparManzanasCantVivMenoresIguales16"
+print datetime.today()
+SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos)
+print "EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16"
+print datetime.today()
+SegmEspAEUCondominios.CrearMZS_AEU(ubigeos)
+print "CrearMZS_AEU"
+print datetime.today()
 ##
 ##
-#SegmEspAEUCondominios.CrearRutasPuntos()
-#print "CrearRutasPuntos"
-#print datetime.today()
-#SegmEspAEUCondominios.CrearViviendasCortes()
-#print "CrearViviendasCortes"
-#print datetime.today()
-#SegmEspAEUCondominios.CrearRutasPreparacion()
-#print "CrearRutasPreparacion"
-#print datetime.today()
-#SegmEspAEUCondominios.RelacionarVerticeFinalInicioConAEUMax()
-#print "RelacionarVerticeFinalInicioConAEUMax"
-#print datetime.today()
+SegmEspAEUCondominios.CrearRutasPuntos()
+print "CrearRutasPuntos"
+print datetime.today()
+SegmEspAEUCondominios.CrearViviendasCortes()
+print "CrearViviendasCortes"
+print datetime.today()
+SegmEspAEUCondominios.CrearRutasPreparacion()
+print "CrearRutasPreparacion"
+print datetime.today()
+SegmEspAEUCondominios.RelacionarVerticeFinalInicioConAEUMax()
+print "RelacionarVerticeFinalInicioConAEUMax"
+print datetime.today()
 ###
 ###
-#SegmEspAEUCondominios.RelacionarRutasLineasConAEU()
-#print "RelacionarRutasLineasConAEU"
-#print datetime.today()
+SegmEspAEUCondominios.RelacionarRutasLineasConAEU()
+print "RelacionarRutasLineasConAEU"
+print datetime.today()
 ##
 ##
 ###
 ###
-#SegmEspAEUCondominios.CrearTablaSegundaPasada()
-#print "CrearTablaSegundaPasada"
-#print datetime.today()
+SegmEspAEUCondominios.CrearTablaSegundaPasada()
+print "CrearTablaSegundaPasada"
+print datetime.today()
 ####
 ###
-#SegmEspAEUCondominios.ActualizarRutasAEUSegundaPasada()
-#print "ActualizarRutasAEUSegundaPasada"
-#print datetime.today()
+SegmEspAEUCondominios.ActualizarRutasAEUSegundaPasada()
+print "ActualizarRutasAEUSegundaPasada"
+print datetime.today()
 #####
 ####
-#SegmEspAEUCondominios.Renumerar_AEU(ubigeos)
-#print "Renumerar_AEU"
-#print datetime.today()
+SegmEspAEUCondominios.Renumerar_AEU(ubigeos)
+print "Renumerar_AEU"
+print datetime.today()
 #####
-#SegmEspAEUCondominios.RenumerarRutas()
-#print "RenumerarRutas"
-#print datetime.today()
+SegmEspAEUCondominios.RenumerarRutas()
+print "RenumerarRutas"
+print datetime.today()
 ###
 ###
-#SegmEspAEUCondominios.CrearTB_AEUS()
-#print "CrearTB_AEUS"
-#print datetime.today()
+SegmEspAEUCondominios.CrearTB_AEUS()
+print "CrearTB_AEUS"
+print datetime.today()
 ###
-#SegmEspSeccionCondominios.EnumerarSecciones(ubigeos)
-#print "EnumerarSecciones"
-#print datetime.today()
+SegmEspSeccionCondominios.EnumerarSecciones(ubigeos)
+print "EnumerarSecciones"
+print datetime.today()
 ###
 ###
-#SegmEspAEUCondominios.CrearRutasMultipart()
-####ExportarSegmEsp(ubigeos)
+SegmEspAEUCondominios.CrearRutasMultipart()
+####
 ###
-#SegmEspSeccionCondominios.CrearSecciones(ubigeos)
+SegmEspSeccionCondominios.CrearSecciones(ubigeos)
 ##
-#SegmEspAEUCondominios.ModelarTablas(ubigeos)
+SegmEspAEUCondominios.ModelarTablas(ubigeos)
+###
 #conx.LimpiarRegistrosSegmentacionEspUbigeo(ubigeos)
 #
-
+#
 conx.LimpiarRegistrosSegmentacionEspUbigeo(ubigeos)
-
-ubigeos=["150116"]
+#
+#ubigeos=["150116"]
 SegmEspAEUCondominios.InsertarRegistros(ubigeos)
 print "InsertarRegistros"
 conx.ActualizarEstadoAEUSegmEsp(ubigeos)
 print "ActualizarEstadoAEUSegmEsp"
-print datetime.today()
+#print datetime.today()
 
+data=[
+   #     ['150116','00100'],
+         ['150116','00200'],
+   #     ['150116', '00400'],
+   #     ['150116', '00500'],
+]
+campos=['UBIGEO','ZONA']
 
-
-#data=[
-#       # ['150116','00100'],
-#       # ['150116','00200'],
-#       # ['150116', '00400'],
-#        ['150116', '00500'],
-#]
-#campos=['UBIGEO','ZONA']
-#
-#print UBIGEO.Expresion(data,campos)
-#
 #CroquisEsp.ExportarCroquisUrbanoAEU(UBIGEO.Expresion(data,campos))
-
-
-
-
 #CroquisEsp.ExportarCroquisUrbanoSeccion(UBIGEO.Expresion(data,campos))
-
-#CroquisEsp.ExportarCroquisUrbanoAEU(UBIGEO.Expresion(data,campos))
-
+#
 #CroquisEsp.ExportarCroquisUrbanoZona(UBIGEO.Expresion(data,campos))
 
 
