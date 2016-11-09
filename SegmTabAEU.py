@@ -21,6 +21,425 @@ import SegmTabSeccion as Seccion
 import SegmTabExportarCroquis as Croquis
 
 
+#def ImportarTablasTrabajo(ubigeos):
+#    arcpy.env.overwriteOutput = True
+#    MZS = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_MZS.shp"
+#    VIVIENDAS = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_VIVIENDAS.shp"
+#    ZONAS = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
+#    #VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
+#    PUNTOS_INICIO_shp = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/PuntosInicio/PUNTOS_INICIO.shp"
+#    MZS_AEU = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/MZS_AEU"
+#
+#    EJES_VIALES="D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_EJES_VIALES.shp"
+#
+#
+#    if arcpy.Exists(VIVIENDAS):
+#        arcpy.Delete_management(VIVIENDAS)
+#    if arcpy.Exists(MZS):
+#        arcpy.Delete_management(MZS)
+#
+#    if arcpy.Exists(ZONAS):
+#        arcpy.Delete_management(ZONAS)
+#
+#    if arcpy.Exists(MZS_AEU):
+#        arcpy.Delete_management(MZS_AEU)
+#
+#    if arcpy.Exists(EJES_VIALES):
+#        arcpy.Delete_management(EJES_VIALES)
+#
+#    if arcpy.Exists(PUNTOS_INICIO_shp):
+#        arcpy.Delete_management(PUNTOS_INICIO_shp)
+#
+#
+#    arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
+#
+#    where_expression=UBIGEO.ExpresionUbigeosImportacion(ubigeos)
+#
+#    #arcpy.FeatureClassToFeatureClass_conversion("CPV_SEGMENTACION.dbo.TB_MZS",
+#    #                                            "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/",
+#    #                                            'TB_MZS.shp',where_expression)
+#
+#    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.VW_MANZANA",
+#                          #"D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_MZS.shp"
+#                            MZS, where_expression)
+#
+#
+#    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.VW_ZONA_CENSAL",
+#                                                ZONAS
+#                                                ,where_expression)
+#    arcpy.Select_analysis("CPV_SEGMENTACION.sde.VW_VIVIENDAS_U2",
+#                                                VIVIENDAS
+#                                                ,where_expression)
+#
+#    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.TB_EJE_VIAL",
+#                                                EJES_VIALES
+#                                                , where_expression)
+#
+#    arcpy.Select_analysis("CPV_SEGMENTACION.sde.TB_PTOS_INICIO",
+#                          PUNTOS_INICIO_shp
+#                          )
+#
+#    arcpy.env.workspace = r"D:/ShapesPruebasSegmentacionUrbanaTabular"
+#
+#    arcpy.DeleteField_management(MZS, ['AEU','IDMANZANA'])
+#
+#    arcpy.AddField_management(MZS, "IDMANZANA", "TEXT")
+#    expression = "str(!UBIGEO!)+str(!ZONA!)+str(!MANZANA!)"
+#    arcpy.CalculateField_management(MZS, "IDMANZANA", expression, "PYTHON_9.3")
+#    arcpy.AddField_management(MZS, "AEU", "SHORT")
+#    arcpy.AddField_management(MZS, "AEU_2", "SHORT")
+#    arcpy.AddField_management(MZS, "FLG_MZ", "SHORT")
+
+
+#def CrearMatrizAdyacencia(ubigeos):
+#    arcpy.env.overwriteOutput = True
+#    ADYACENCIA="D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/adyacencia.dbf"
+#    MZS = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_MZS.shp"
+#    ZONAS = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
+#
+#
+#
+#    arcpy.env.workspace = r"D:/ShapesPruebasSegmentacionUrbanaTabular"
+#    arcpy.env.workspace = "Database Connections"
+#    if arcpy.Exists("PruebaSegmentacion.sde") == False:
+#        arcpy.CreateDatabaseConnection_management("Database Connections",
+#                                                  "PruebaSegmentacion.sde",
+#                                                  "SQL_SERVER",
+#                                                  "192.168.200.250",
+#                                                  "DATABASE_AUTH",
+#                                                  "sde",
+#                                                  "$deDEs4Rr0lLo",
+#                                                  "#",
+#                                                  "CPV_SEGMENTACION",
+#                                                  "#",
+#                                                  "#",
+#                                                  "#",
+#                                                  "#")
+#
+#
+#
+#    prueba = "PruebaSegmentacion.sde"
+#
+#
+#    arcpy.env.workspace = r"Database Connections/PruebaSegmentacion.sde"
+#
+#
+#    if arcpy.Exists(r"Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.ADYACENCIA"):
+#        arcpy.Delete_management("Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.adyacencia")
+#
+#    if arcpy.Exists(r"Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.TB_MZS_TRABAJO"):
+#        arcpy.Delete_management("Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.TB_MZS_TRABAJO")
+#
+#
+#
+#
+#    where_list = ubigeos
+#
+#    inFeatures = MZS
+#    fieldName1 = "xCentroid"
+#    fieldName2 = "yCentroid"
+#    fieldPrecision = 18
+#    fieldScale = 6
+#    fieldScale2 = 2
+#    #### Add fields
+#
+#    lst = arcpy.ListFields(MZS)
+#    for f in lst:
+#        if (f.name==fieldName1):
+#            arcpy.DeleteField_management(inFeatures,["xCentroid"])
+#        if (f.name==fieldName2):
+#            arcpy.DeleteField_management(inFeatures,["yCentroid"])
+#        if (f.name == "AREA"):
+#            arcpy.DeleteField_management(inFeatures, ["AREA"])
+#
+#
+#    arcpy.AddField_management(inFeatures, fieldName1, "DOUBLE",
+#                                      fieldPrecision, fieldScale)
+#    arcpy.AddField_management(inFeatures, fieldName2, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#
+#    arcpy.AddField_management(inFeatures, "AREA", "DOUBLE", fieldPrecision, fieldScale2)
+#
+#
+#
+#
+#    # Calculate centroid
+#
+#    fields = ["SHAPE@X", "SHAPE@Y", "xCentroid", "yCentroid"]
+#
+#    with arcpy.da.UpdateCursor(inFeatures, fields) as cursorx:
+#        for row0 in cursorx:
+#            row0[2] = row0[0]
+#            row0[3] = row0[1]
+#            cursorx.updateRow(row0)
+#
+#    exp = "!SHAPE.AREA@METERS!"
+#    arcpy.CalculateField_management(inFeatures, "AREA", exp, "PYTHON_9.3")
+#
+#
+#
+#    if arcpy.Exists(ADYACENCIA) == True:
+#        arcpy.Delete_management(ADYACENCIA)
+#
+#    arcpy.CreateTable_management("D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/", "adyacencia.dbf")
+#
+#    fieldName1 = "FirstX"
+#    fieldName2 = "FirstY"
+#
+#    fieldName3 = "LastX"
+#    fieldName4 = "LastY"
+#
+#    fieldPrecision = 18
+#    fieldScale = 6
+#
+#    inFeatures = ADYACENCIA
+#
+#    # Add fields inicio
+#
+#
+#
+#    arcpy.AddField_management(inFeatures, fieldName1, "DOUBLE",
+#                              fieldPrecision, fieldScale)
+#    arcpy.AddField_management(inFeatures, fieldName2, "DOUBLE",
+#                              fieldPrecision, fieldScale)
+#    # Add fields inicio
+#    arcpy.AddField_management(inFeatures, fieldName3, "DOUBLE",
+#                              fieldPrecision, fieldScale)
+#    arcpy.AddField_management(inFeatures, fieldName4, "DOUBLE",
+#                              fieldPrecision, fieldScale)
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#    where_expression=UBIGEO.ExpresionUbigeos(ubigeos)
+#
+#    for row in arcpy.da.SearchCursor(ZONAS, ["UBIGEO", "ZONA"],where_expression):
+#        where_expression2=' "UBIGEO"=\'%s\' AND "ZONA"=\'%s\' ' % (row[0], row[1])
+#        print where_expression2
+#        desc=str(row[0])+str(row[1])
+#        arcpy.MakeFeatureLayer_management(MZS, "manzanas",where_expression2)
+#        arcpy.FeatureToPoint_management("manzanas",
+#                                        "in_memory/Point" +desc ,
+#                                        "CENTROID")
+#
+#        arcpy.AddField_management("in_memory/Point" +desc , 'Z', "SHORT")
+#        arcpy.CalculateField_management("in_memory/Point" +desc , 'Z', 1)
+#
+#
+#        arcpy.CreateThiessenPolygons_analysis("in_memory/Point" + desc,
+#                                              "in_memory/VoronoiPolygon" + desc,
+#                                              "ALL")
+#
+#
+#
+#
+#        arcpy.FeatureTo3DByAttribute_3d("in_memory/Point" +desc, "in_memory/Points3D" + desc, 'Z')
+#
+#        Tin = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/Tin/Shape" + str(row[0]) + "" + str(row[1])
+#
+#        arcpy.CreateTin_3d(Tin, "", "in_memory/Points3D"+desc, "DELAUNAY")
+#
+#        arcpy.TinEdge_3d(Tin, "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/Edge/" + desc+".shp", edge_type='DATA')
+#
+#
+#        inFeatures = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/Edge/" + desc+".shp"
+#        Edge="D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/Edge/" + desc+".shp"
+#
+#        fieldName1 = "FirstX_1"
+#        fieldName2 = "FirstY_1"
+#
+#        fieldName3 = "LastX_1"
+#        fieldName4 = "LastY_1"
+#
+#        fieldPrecision = 18
+#        fieldScale = 6
+#
+#        # Add fields inicio
+#        arcpy.AddField_management(inFeatures, fieldName1, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#        arcpy.AddField_management(inFeatures, fieldName2, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#
+#        # Add fields fin
+#        arcpy.AddField_management(inFeatures, fieldName3, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#        arcpy.AddField_management(inFeatures, fieldName4, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#
+#        # Calculate Points Firts
+#        arcpy.CalculateField_management(inFeatures, fieldName1,
+#                                        "!SHAPE.firstPoint.X!",
+#                                        "PYTHON_9.3")
+#        arcpy.CalculateField_management(inFeatures, fieldName2,
+#                                        "!SHAPE.firstPoint.Y!",
+#                                        "PYTHON_9.3")
+#
+#        # Calculate Points Last
+#        arcpy.CalculateField_management(inFeatures, fieldName3,
+#                                        "!SHAPE.lastPoint.X!",
+#                                        "PYTHON_9.3")
+#        arcpy.CalculateField_management(inFeatures, fieldName4,
+#                                        "!SHAPE.lastPoint.Y!",
+#                                        "PYTHON_9.3")
+#
+#
+#
+#    # pologonos de vonoi a polyline ignorando lados vecinos
+#        arcpy.PolygonToLine_management("in_memory/VoronoiPolygon"+desc,
+#                                   "in_memory/VoronoiLine" + desc,
+#                                   "IGNORE_NEIGHBORS")
+#
+#    # polyline  a split lines
+#
+#        arcpy.SplitLine_management("in_memory/VoronoiLine" + desc,
+#                               "in_memory/VoronoiSplitLine" + desc)
+#
+#        fieldName1 = "FirstX_2"
+#        fieldName2 = "FirstY_2"
+#        fieldName3 = "LastX_2"
+#        fieldName4 = "LastY_2"
+#
+#        fieldPrecision = 18
+#        fieldScale = 6
+#
+#
+#
+##        desc = "Shape" + str(row[0]) + "" + str(row[1]) + "" + str(row[2]) + ".shp"
+#        inFeatures = "in_memory/VoronoiSplitLine" + desc
+#
+#        # Add fields inicio
+#        arcpy.AddField_management(inFeatures, fieldName1, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#        arcpy.AddField_management(inFeatures, fieldName2, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#
+#        # Add fields fin
+#        arcpy.AddField_management(inFeatures, fieldName3, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#        arcpy.AddField_management(inFeatures, fieldName4, "DOUBLE",
+#                                  fieldPrecision, fieldScale)
+#
+#        # Calculate Points Firts
+#        arcpy.CalculateField_management(inFeatures, fieldName1,
+#                                        "!SHAPE.firstPoint.X!",
+#                                        "PYTHON_9.3")
+#        arcpy.CalculateField_management(inFeatures, fieldName2,
+#                                        "!SHAPE.firstPoint.Y!",
+#                                        "PYTHON_9.3")
+#
+#        # Calculate Points Last
+#        arcpy.CalculateField_management(inFeatures, fieldName3,
+#                                        "!SHAPE.lastPoint.X!",
+#                                        "PYTHON_9.3")
+#        arcpy.CalculateField_management(inFeatures, fieldName4,
+#                                        "!SHAPE.lastPoint.Y!",
+#                                        "PYTHON_9.3")
+#
+#        # Eliminando los registros identicos
+#        arcpy.DeleteIdentical_management("in_memory/VoronoiSplitLine" + desc, ["Shape"])
+#
+#        arcpy.Intersect_analysis(["in_memory/VoronoiSplitLine" + desc,
+#                                  Edge],
+#                                 "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/Intersections/" + desc, "ALL", "", "point")
+#
+#
+#        fc1 = Edge
+#        fields1 = ['FID']
+#        fc2 = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/Intersections/" + desc+".shp"
+#        fields2 = ['FID_'+str(row[0])]
+#
+#
+#
+#        with arcpy.arcpy.da.SearchCursor(fc1, fields1) as cursor1:
+#            for row1 in cursor1:
+#
+#                with arcpy.arcpy.da.UpdateCursor(fc2, fields2) as cursor2:
+#                    contador = 0
+#                    for row2 in cursor2:
+#                        if row1[0] == row2[0]:
+#                            contador = contador + 1
+#
+#                        if contador > 3:
+#                            cursor2.deleteRow()
+#                            contador = contador - 1
+#
+#        del cursor1
+#
+#
+#        fc = fc2
+#        fields = ['FirstX_1', 'FirstY_1', 'LastX_1', 'LastY_1', 'FirstX_2', 'FirstY_2', 'LastX_2', 'LastY_2']
+#    # a=np.array([2, 4, 6, 8])
+#    # b = np.array([2, 4, 6, 8])
+#
+#        j = 0
+#
+#
+#        with arcpy.da.UpdateCursor(fc, fields) as cursor:
+#            for row in cursor:
+#                a1 = row[0] - row[2]  # ax
+#                a2 = row[1] - row[3]  # ay  a=(a1,a2)
+#                b1 = row[4] - row[6]  # bx
+#                b2 = row[5] - row[7]  # bx b =(b1,b2)
+#
+#                a = np.array([a1, a2])
+#                b = np.array([b1, b2])
+#
+#                producto_escalar = np.dot(a, b)  # a.b=a1*b1 + a2*b2
+#                coseno = abs(producto_escalar) / (np.linalg.norm(a) * np.linalg.norm(b))
+#
+#                # print  str(row[8])+":"+str(coseno)
+#
+#
+#
+#                if coseno >= 0.005:
+#                    cursor.deleteRow()
+#
+#                j = j + 1
+#
+#            del cursor
+#
+#
+#        input_table = fc2
+#        out_lines ="D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/ShapesFinal/" + desc+".shp"
+#
+#
+#            # XY To Line
+#        arcpy.XYToLine_management(input_table, out_lines,'FirstX_1', 'FirstY_1', 'LastX_1', 'LastY_1', "GEODESIC")
+#
+#        arcpy.DeleteIdentical_management(out_lines, ["Shape"])
+#
+#        adyacencias_x = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/MatrizAdyacencia/ShapesFinal/" + desc+".shp"
+#        #adyacencias_x = "in_memory/ShapesFinal" + desc
+#
+#        manzanas = "manzanas"
+#
+#        EliminarAdyacencias.PorCantidadManzanasCruza(manzanas, adyacencias_x)
+#
+#        cursorInsertar = arcpy.da.InsertCursor(ADYACENCIA,
+#                                   ['FirstX', 'FirstY', 'LastX', 'LastY'])
+#        for row in arcpy.da.SearchCursor(adyacencias_x,
+#                                     ['FirstX_1', 'FirstY_1', 'LastX_1', 'LastY_1']):
+#        # print row
+#            cursorInsertar.insertRow(row)
+#        del cursorInsertar
+#
+#
+#
+#    arcpy.TableToTable_conversion(ADYACENCIA,
+#                                  'Database Connections/PruebaSegmentacion.sde/', 'adyacencia')
+#    MZS_TRABAJO = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_MZS_TRABAJO.shp"
+#
+#    arcpy.CopyFeatures_management(MZS,MZS_TRABAJO)
+#
+#    arcpy.FeatureClassToGeodatabase_conversion([MZS_TRABAJO],
+#                                               'Database Connections/PruebaSegmentacion.sde/')
+
 
 
 def CopiarTablas():
@@ -357,97 +776,6 @@ def RenumerarViviendasMzsMenores16(ubigeos):
 
 
 
-def PrimeraPuertaPorAEU():
-    arcpy.env.overwriteOutput = True
-    TB_VIVIENDAS_ORDENADAS_shp = "D:\\ShapesPruebasSegmentacionUrbanaTabular\\AEU\\EnumerarAEUViviendas\\TB_VIVIENDAS_ORDENADAS.shp"
-    TB_VIVIENDAS_SELECT2_SORT_La = "TB_VIVIENDAS_SELECT1_SORT_La"
-    TB_VIVIENDAS_ESCOGIDAS__4_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
-    TB_VIVIENDAS_SELECT2_SORT = "in_memory\\TB_VIVIENDAS_SELECT1_SORT"
-    TB_VIVIENDAS_SEGUNDA_VIVIENDA__3_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
-    TB_VIVIENDAS_ESCOGIDAS__3_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
-    TB_VIVIENDAS_SEGUNDA_VIVIENDA__4_ = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
-    TB_VIVIENDAS_SEGUNDAS_ESCOGIDAS = "in_memory\\TB_VIVIENDAS_PRIMERAS_ESCOGIDAS"
-    TB_VIVIENDAS_SELECT2__2_ = "in_memory\\TB_VIVIENDAS"
-    TB_VIVIENDAS = "in_memory\\TB_VIVIENDAS"
-    TB_VIVIENDAS_SELECT2_SORT_La__2_ = "TB_VIVIENDAS_SELECT1_SORT_La"
-    TB_PRIMERA_PUERTA_AEU_shp = "D:\\ShapesPruebasSegmentacionUrbanaTabular\\AEU\\CrearRepresentacionAEU\\TB_PRIMERA_PUERTA_AEU.shp"
-
-    if arcpy.Exists(TB_PRIMERA_PUERTA_AEU_shp):
-        arcpy.Delete_management(TB_PRIMERA_PUERTA_AEU_shp)
-
-
-    #where="(\"USOLOCAL\"=1 OR \"USOLOCAL\"=3 OR (\"USOLOCAL\"=6 AND (\"COND_USOLO\"=1 OR \"COND_USOLO\"=3 ))) AND FLG_MZ=1"
-    where=" FLG_MZ=1"
-    # Process: Select (2)
-    arcpy.Select_analysis(TB_VIVIENDAS_ORDENADAS_shp, TB_VIVIENDAS,
-                          where)
-
-    # Process: Delete Identical
-    arcpy.DeleteIdentical_management(TB_VIVIENDAS, "Shape", "", "0")
-
-    # Process: Sort
-    arcpy.Sort_management(TB_VIVIENDAS_SELECT2__2_, TB_VIVIENDAS_SELECT2_SORT,
-                          "UBIGEO ASCENDING;ZONA ASCENDING;AEU ASCENDING;ID_REG_OR ASCENDING", "UR")
-
-    # Process: Make Feature Layer
-    arcpy.MakeFeatureLayer_management(TB_VIVIENDAS_SELECT2_SORT, TB_VIVIENDAS_SELECT2_SORT_La, "", "",
-                                      "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;ID ID VISIBLE NONE;UBIGEO UBIGEO VISIBLE NONE;CODCCPP CODCCPP VISIBLE NONE;ZONA ZONA VISIBLE NONE;MANZANA MANZANA VISIBLE NONE;NOMCCPP NOMCCPP VISIBLE NONE;DEPARTAMEN DEPARTAMEN VISIBLE NONE;PROVINCIA PROVINCIA VISIBLE NONE;DISTRITO DISTRITO VISIBLE NONE;AREA AREA VISIBLE NONE;FRENTE_ORD FRENTE_ORD VISIBLE NONE;ID_REG_OR ID_REG_OR VISIBLE NONE;EDIFICACIO EDIFICACIO VISIBLE NONE;USOLOCAL USOLOCAL VISIBLE NONE;COND_USOLO COND_USOLO VISIBLE NONE;AEU AEU VISIBLE NONE;OR_VIV_AEU OR_VIV_AEU VISIBLE NONE;FLG_CORTE FLG_CORTE VISIBLE NONE;FLG_MZ FLG_MZ VISIBLE NONE;FEAT_SEQ FEAT_SEQ VISIBLE NONE")
-
-    # Process: Summary Statistics
-    arcpy.Statistics_analysis(TB_VIVIENDAS_SELECT2_SORT, TB_VIVIENDAS_SEGUNDAS_ESCOGIDAS, "FID FIRST",
-                              "UBIGEO;CODCCPP;ZONA;AEU")
-
-    # Process: Add Field (3)
-    arcpy.AddField_management(TB_VIVIENDAS_SEGUNDAS_ESCOGIDAS, "ID_SEG", "SHORT", "", "", "", "", "NULLABLE",
-                              "NON_REQUIRED", "")
-
-    # Process: Calculate Field (2)
-    arcpy.CalculateField_management(TB_VIVIENDAS_SEGUNDA_VIVIENDA__4_, "ID_SEG", "[FIRST_FID]", "VB", "")
-
-    # Process: Add Field (4)
-    arcpy.AddField_management(TB_VIVIENDAS_ESCOGIDAS__3_, "flg_escogido", "SHORT", "", "", "", "", "NULLABLE",
-                              "NON_REQUIRED", "")
-
-    # Process: Calculate Field (5)
-    arcpy.CalculateField_management(TB_VIVIENDAS_SEGUNDA_VIVIENDA__3_, "FLG_ESCOGIDO", "1", "VB", "")
-
-    # Process: Add Join (2)
-    arcpy.AddJoin_management(TB_VIVIENDAS_SELECT2_SORT_La, "FID", TB_VIVIENDAS_ESCOGIDAS__4_, "ID_SEG", "KEEP_ALL")
-
-    # Process: Select (3)
-    arcpy.Select_analysis(TB_VIVIENDAS_SELECT2_SORT_La__2_, TB_PRIMERA_PUERTA_AEU_shp, "\"flg_escogido\"=1")
-
-    # Process: Add Field
-    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "UBIGEO", "TEXT")
-    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "CODCCPP", "TEXT")
-    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "ZONA", "TEXT")
-    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "MANZANA", "TEXT")
-    arcpy.AddField_management(TB_PRIMERA_PUERTA_AEU_shp, "AEU", "SHORT")
-
-
-    # Process: Calculate Field
-    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "UBIGEO",
-                                    "[TB_VIVIE_1]", "VB", "")
-    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "CODCCPP",
-                                    "[TB_VIVIE_2]", "VB", "")
-
-    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "ZONA",
-                                    "[TB_VIVIE_3]", "VB", "")
-    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "MANZANA",
-                                    "[TB_VIVIE_4]", "VB", "")
-    arcpy.CalculateField_management(TB_PRIMERA_PUERTA_AEU_shp, "AEU",
-                                    "[TB_VIVI_16]", "VB", "")
-
-
-    field_delete=""
-
-
-    for i in range(1,10):
-        field_delete=";TB_VIVIE_"+str(i)+field_delete
-    for j in range(10, 30):
-        field_delete = ";TB_VIVI_" + str(j) + field_delete
-    arcpy.DeleteField_management(TB_PRIMERA_PUERTA_AEU_shp,"TB_VIVIEND"+field_delete)
-
 
 def PrimeraViviendaPorAEU():
     TB_VIVIENDAS_ORDENADAS_shp = "D:\\ShapesPruebasSegmentacionUrbanaTabular\\AEU\\EnumerarAEUViviendas\\TB_VIVIENDAS_ORDENADAS.shp"
@@ -631,8 +959,6 @@ def SegundaViviendaPorAEU():
 
     #arcpy.DeleteField_management(TB_SEGUNDA_VIVIENDA_AEU_shp,"TB_VIVIEND"+field_delete)
 
-
-
 def CrearRutasPreparacion(ubigeos):
     TB_VIVIENDAS_ORDENADAS_shp = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
     TB_MZS_shp = "D:/ShapesPruebasSegmentacionUrbanaTabular/AEU/EnumerarAEUViviendas/TB_MZS.shp"
@@ -776,7 +1102,6 @@ def RelacionarRutasLineasConAEUSegundaVivienda():
 
     arcpy.DeleteField_management(TB_RUTAS_1_shp,"TB_RUTAS_P"+field_delete+";TB_INT_RUT"+field_delete2)
 
-
 def RelacionarRutasLineasConAEUPrimeraPuerta():
     arcpy.env.overwriteOutput = True
 
@@ -785,11 +1110,11 @@ def RelacionarRutasLineasConAEUPrimeraPuerta():
     #TB_RUTAS_Layer__2_ = "TB_RUTAS_Layer"
 
 
-    TB_RUTAS_1_shp = "D:\\ShapesPruebasSegmentacionUrbanaTabular\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1.shp"
+    TB_RUTAS_1_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1.shp"
     TB_INTERSECT_RUTAS_PRIMERA_PUERTA = "in_memory\\TB_INTERSECT_RUTAS_PRIMERA_PUERTA"
     TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX = "in_memory\\TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX"
     TB_RUTAS_1_Layer = "TB_RUTAS_1"
-    TB_RUTAS_1_PRIMERA_PUERTA_shp="D:\\ShapesPruebasSegmentacionUrbanaTabular\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1_PRIMERA_PUERTA.shp"
+    TB_RUTAS_1_PRIMERA_PUERTA_shp="D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1_PRIMERA_PUERTA.shp"
 
     #if arcpy.Exists(TB_RUTAS_1_shp):
     #    arcpy.Delete_management(TB_RUTAS_1_shp)
@@ -806,7 +1131,7 @@ def RelacionarRutasLineasConAEUPrimeraPuerta():
 
     # Process: Intersect (3)
     arcpy.Intersect_analysis(
-        "TB_RUTAS_1 #;D:\\ShapesPruebasSegmentacionUrbanaTabular\\AEU\\CrearRepresentacionAEU\\TB_PRIMERA_PUERTA_AEU.shp #",
+        "TB_RUTAS_1 #;D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_PRIMERA_PUERTA_AEU.shp #",
         TB_INTERSECT_RUTAS_PRIMERA_PUERTA, "ALL", "0.35 Meters", "INPUT")
     # Process: Summary Statistics (3)
     arcpy.Statistics_analysis(TB_INTERSECT_RUTAS_PRIMERA_PUERTA, TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX, "AEU_1 MAX",

@@ -10,30 +10,34 @@ import  ImportarExportarSQL as ie
 from datetime import *
 
 
+
 def Importar_Tablas(ubigeos):
     print datetime.today()
-    conx.ActualizarCantViviendasMzs()
+
+
+    #conx.ActualizarCantViviendasMzs(ubigeos)
+    conx.ActualizarCantViviendasMzsCondominios(ubigeos)
+
     print "ActualizarCantViviendasMzs"
     print datetime.today()
     SegmEspAEU.ImportarTablasTrabajo(ubigeos)
     print "ImportarTablasTrabajo"
     print datetime.today()
-
 def SegmentacionEspacial(ubigeos):
     Ruta = "D:\ShapesPruebasSegmentacionUrbana\AEU\MatrizAdyacencia"
     Lista_adyacencia = "lista_adyacencia.dbf"
     print datetime.today()
-    SegmEspAEU.CrearMatrizAdyacencia(ubigeos)
-    print "CrearMatrizAdyacencia"
-    print datetime.today()
+    #SegmEspAEU.CrearMatrizAdyacencia(ubigeos)
+    #print "CrearMatrizAdyacencia"
+    #print datetime.today()
 
-    SegmEspAEU.ExportarTablasAdyacencia()
-    print "ExportarTablasAdyacencia"
-    print datetime.today()
+    #SegmEspAEU.ExportarTablasAdyacencia()
+    #print "ExportarTablasAdyacencia"
+    #print datetime.today()
 
-    conx.InsertarAdyacencia()
-    print "InsertarAdyacencia"
-    print datetime.today()
+    #conx.InsertarAdyacencia()
+    #print "InsertarAdyacencia"
+    #print datetime.today()
     ie.Importar_Lista_ADYACENCIA(Ruta, Lista_adyacencia)
     print "ImportarAdyacencia"
     print datetime.today()
@@ -62,16 +66,8 @@ def SegmentacionEspacial(ubigeos):
     print "SegundaViviendaPorAEU"
     print datetime.today()
 
-    SegmEspAEU.PrimeraPuertaPorAEU()
-    print "PrimeraPuerta"
-    print datetime.today()
-
     SegmEspAEU.RelacionarRutasLineasConAEUSegundaVivienda()
     print "RelacionarRutasLineasConAEUSegundaVivienda"
-    print datetime.today()
-
-    SegmEspAEU.RelacionarRutasLineasConAEUPrimeraPuerta()
-    print "RelacionarRutasLineasConAEUPrimeraPuerta"
     print datetime.today()
 
     SegmEspAEU.ActualizarRutasViviendasMenoresIguales16()
@@ -130,7 +126,6 @@ def SegmentacionEspacial(ubigeos):
     conx.ActualizarEstadoAEUSegmEsp(ubigeos)
     print "ActualizarEstadoAEUSegmEsp"
     print datetime.today()
-
 def SegmentacionTabular(ubigeos):
     print datetime.today()
     SegmTabAEU.CopiarTablas()
@@ -156,29 +151,15 @@ def SegmentacionTabular(ubigeos):
     SegmTabAEU.CrearRutasPreparacion(ubigeos)
     print "CrearRutasPreparacion"
     print datetime.today()
-
-
     SegmTabAEU.PrimeraViviendaPorAEU()
     print "PrimeraViviendaPorAEU"
     print datetime.today()
     SegmTabAEU.SegundaViviendaPorAEU()
     print "SegundaViviendaPorAEU"
     print datetime.today()
-
-    SegmTabAEU.PrimeraPuertaPorAEU()
-
-    print "PrimeraPuertaPorAEU"
-    print datetime.today()
-
-
     SegmTabAEU.RelacionarRutasLineasConAEUSegundaVivienda()
     print "RelacionarRutasLineasConAEUSegundaVivienda"
     print datetime.today()
-
-    SegmTabAEU.RelacionarRutasLineasConAEUPrimeraPuerta()
-    print "RelacionarRutasLineasConAEUPrimeraPuerta"
-    print datetime.today()
-
     SegmTabAEU.ActualizarRutasViviendasMenoresIguales16()
     print "ActualizarRutasViviendasMenoresIguales16"
     print datetime.today()
@@ -217,44 +198,27 @@ def ExportarSegmTab(ubigeos):
     for ubigeo in ubigeos:
         CroquisTabular.CrearCarpetasCroquisSegmTab([ubigeo])
         CroquisTabular.ExportarCroquisUrbanoAEU([ubigeo])
-        #CroquisTabular.ExportarCroquisUrbanoSeccion([ubigeo])
-        #CroquisTabular.ExportarCroquisUrbanoZona([ubigeo])
-
-
+        CroquisTabular.ExportarCroquisUrbanoSeccion([ubigeo])
+        CroquisTabular.ExportarCroquisUrbanoZona([ubigeo])
 def ExportarSegmEsp(ubigeos):
     for ubigeo in ubigeos:
         CroquisEsp.CrearCarpetasCroquisSegmEsp([ubigeo])
         CroquisEsp.ExportarCroquisUrbanoAEU([ubigeo])
-        #CroquisEsp.ExportarCroquisUrbanoSeccion([ubigeo])
-        #CroquisEsp.ExportarCroquisUrbanoZona([ubigeo])
+        CroquisEsp.ExportarCroquisUrbanoSeccion([ubigeo])
+        CroquisEsp.ExportarCroquisUrbanoZona([ubigeo])
 
 
-ubigeos=[
-#"020601",
-#"021509",
-#"021806",
-#"022001",
-#"030212",
-#"030602",
+
+
+
+
+
+
+#ubigeos=["030602",
 #"050507",
 #"050601",
-#"050617",
-#"060903",
-"080205",
-"080206",
- ]
-
-#ExportarSegmEsp(ubigeos)
-
-
-ExportarSegmTab(ubigeos)
-
-#Importar_Tablas(ubigeos)
-#SegmentacionEspacial(ubigeos)
-#SegmentacionTabular(ubigeos)
-
-
-
+#"050617"
+# ]
 #
 #
 #Importar_#Tablas(ubigeos)
@@ -266,10 +230,7 @@ ExportarSegmTab(ubigeos)
 #"050601",
 #"050617"
 # ]
-
-#SegmEspAEU.ImportarZonas(ubigeos)
 #ExportarSegmEsp(ubigeos)
-
 #ExportarSegmTab(ubigeos)
 
 
@@ -298,3 +259,7 @@ ExportarSegmTab(ubigeos)
 #SegmEspAEU.RelacionarRutasLineasConAEUPrimeraPuerta()
 
 
+
+
+
+#ExportarSegmTab()

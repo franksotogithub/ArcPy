@@ -14,6 +14,40 @@ def ActualizarCantViviendasMzs():
     conn.commit()
     conn.close()
 
+def ActualizarCantViviendasMzsCondominios(ubigeos):
+    server = "192.168.200.250"
+    user = "sde"
+    password = "$deDEs4Rr0lLo"
+
+    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+    cursor = conn.cursor()
+    for row in ubigeos:
+        sql_query = """
+        exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}'
+        """.format(ubigeo=str(row), zona="99999")
+        cursor.execute(sql_query)
+        conn.commit()
+    conn.close()
+
+
+
+def ActualizarCampoMzCondominio(ubigeos):
+    server = "192.168.200.250"
+    user = "sde"
+    password = "$deDEs4Rr0lLo"
+
+    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+    cursor = conn.cursor()
+
+    for row in ubigeos:
+        sql_query = """
+        exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}'
+        """.format(ubigeo=str(row), zona="99999")
+        cursor.execute(sql_query)
+        conn.commit()
+    conn.close()
+
+
 def ActualizarTipoVivienda():
 
     server = "192.168.200.250"
@@ -199,6 +233,10 @@ def ActualizarEstadoAEUSegmTab(ubigeos):
         cursor.execute(sql_query)
         conn.commit()
     conn.close()
+
+
+
+
 #cursor.executemany(
 #    "INSERT INTO persons VALUES (%d, %s, %s)",
 #    [(1, 'John Smith', 'John Doe'),

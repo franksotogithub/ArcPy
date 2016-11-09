@@ -94,3 +94,41 @@ def PorCantidadManzanasCruza(manzanas,adyacencias):
 
             if cantidad>2:
                 cursor3.deleteRow()
+
+
+
+def PorZonaCruza(zona,adyacencias):
+    arcpy.env.overwriteOutput = True
+    arcpy.MakeFeatureLayer_management(adyacencias, "temporal_adyacencias")
+    arcpy.MakeFeatureLayer_management(adyacencias, "temporal_adyacencia")
+    zona_lineas="in_memory\zona_lineas"
+
+    arcpy.MakeFeatureLayer_management(zona, "temporal_zona")
+
+    arcpy.FeatureToLine_management(zona,zona_lineas)
+
+    arcpy.MakeFeatureLayer_management(zona_lineas, "temporal_zona_lineas")
+
+
+    with arcpy.arcpy.da.UpdateCursor(adyacencias, ['FID']) as cursor1:
+        # contador=0
+        for row1 in cursor1:
+            # print "ID:" + str(row1[0])
+            contador = 0
+            where_expression = "FID=" + str(row1[0])
+            arcpy.SelectLayerByAttribute_management("temporal_adyacencia", "NEW_SELECTION", where_expression)
+            arcpy.SelectLayerByLocation_management("temporal_zona_lineas", "INTERSECT",
+                                                   "temporal_adyacencia", "", "NEW_SELECTION")
+
+            cantidad = 0
+            with arcpy.da.SearchCursor("temporal_zona_lineas", ["FID"]) as cursor2:
+                for row2 in cursor2:
+                    cantidad = cantidad + 1
+
+
+            if (cantidad > 0):
+                cursor1.deleteRow()
+
+
+
+    del cursor1

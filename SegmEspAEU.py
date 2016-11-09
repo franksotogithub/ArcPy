@@ -32,20 +32,6 @@ from datetime import *
 #    arcpy.CalculateField_management(MZS, "IDMANZANA", expression, "PYTHON_9.3")
 #
 
-def ImportarZonas(ubigeos):
-    ZONAS = "D:/ShapesPruebasSegmentacionUrbana/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
-
-    arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
-
-    where_expression = UBIGEO.ExpresionUbigeosImportacion(ubigeos)
-    if arcpy.Exists(ZONAS):
-        arcpy.Delete_management(ZONAS)
-
-
-
-    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.VW_ZONA_CENSAL",
-                          ZONAS
-                          , where_expression)
 
 def ImportarTablasTrabajo(ubigeos):
     arcpy.env.overwriteOutput = True
@@ -132,8 +118,6 @@ def ImportarTablasTrabajo(ubigeos):
     arcpy.AddField_management(MZS, "AEU", "SHORT")
     arcpy.AddField_management(MZS, "AEU_2", "SHORT")
     arcpy.AddField_management(MZS, "FLG_MZ", "SHORT")
-
-
 
 
 def CrearMatrizAdyacencia(ubigeos):
@@ -548,6 +532,9 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos):
             i=0
             or_viv_aeu=1
             where_expression_viv = " UBIGEO=\'" + str(row1[0]) + "\'  AND  ZONA=\'" + str(row1[1]) + "\' AND MANZANA=\'" + str(row1[2])+"\'"
+
+
+
             edificacion_anterior=0
             numero_aeu_anterior=0
             idmanzana_anterior=""
@@ -646,7 +633,6 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos):
                 cursor2.updateRow(row2)
         del cursor2
 
-
 def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
     arcpy.env.overwriteOutput = True
     ZONAS = "D:/ShapesPruebasSegmentacionUrbana/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
@@ -711,7 +697,7 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
                         usolocal=int(row2[2])
                         usolocal_cond=int(int(row2[3]))
 
-                        if (usolocal in [1, 3]):
+                        if (usolocal in [1, 3]) or (usolocal == 6 and (usolocal_cond in [1, 3])):
                             row2[1] = or_viv_aeu
                             or_viv_aeu=or_viv_aeu+1
 
@@ -1265,6 +1251,8 @@ def RelacionarRutasLineasConAEUSegundaVivienda():
 ##############Relacionando Rutas de Lineas con AEU usando la primera vivienda de cada AEU############################
 def RelacionarRutasLineasConAEUPrimeraPuerta():
     arcpy.env.overwriteOutput = True
+
+
     TB_RUTAS_1_shp = "D:\\ShapesPruebasSegmentacionUrbana\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1.shp"
     TB_INTERSECT_RUTAS_PRIMERA_PUERTA = "in_memory\\TB_INTERSECT_RUTAS_PRIMERA_PUERTA"
     TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX = "in_memory\\TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX"

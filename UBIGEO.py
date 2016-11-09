@@ -13,6 +13,52 @@ def ExpresionUbigeos(where_list):
 
 
 
+def Expresion(data,campos):
+    m = 0
+    where_expression = ""
+    cant_campos=len(campos)
+
+    #sql_query = """
+    #exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}'
+    #""".format(ubigeo=str(row), zona="99999")
+
+    for fila in data:
+        if (m + 1) == len(data):
+            fila_expresion=""
+            n = 0
+            for campo in campos:
+
+
+                if (n+1)==len(campos):
+                    fila_expresion = fila_expresion+""" \"{nombre_campo}\"=\'{data}\'  """.format(nombre_campo=campos[n],data=fila[n])
+                else:
+                    fila_expresion = fila_expresion+""" \"{nombre_campo}\"=\'{data}\' AND """.format(nombre_campo=campos[n],data=fila[n])
+                n=n+1
+            where_expression = where_expression + "("+fila_expresion+")"
+
+        else:
+            fila_expresion = ""
+            n = 0
+            for campo in campos:
+
+                if (n+1) == len(campos):
+                    fila_expresion = fila_expresion + """ \"{nombre_campo}\"=\'{data}\'  """.format(nombre_campo=campos[n],data=fila[n])
+                else:
+                    fila_expresion = fila_expresion + """ \"{nombre_campo}\"=\'{data}\' AND """.format(nombre_campo=campos[n],data=fila[n])
+                n = n + 1
+
+            where_expression = where_expression + "("+fila_expresion + ") OR "
+
+
+        m = m + 1
+
+    return where_expression
+
+
+
+
+
+
 def ExpresionUbigeosImportacion(where_list):
     m=0
     where_expression = ""
@@ -44,3 +90,7 @@ def EtiquetaZona(zona):
     zona_temp=zona_temp+str(zona_int_eq)
 
     return zona_temp
+
+#print ExpresionUbigeos(['01','02','03'])
+
+#print Expresion(data=[['01','02'],['01','03']],campos=['UBIGEO','ZONA'])

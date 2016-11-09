@@ -213,8 +213,6 @@ def ExportarCroquisUrbanoAEU(ubigeos):
         arcpy.mapping.RemoveLayer(df, lyrFile1)
         arcpy.mapping.RemoveLayer(df, lyrFile2)
         arcpy.mapping.RemoveLayer(df, lyrFile3)
-
-
         del mxd
         del df
 
