@@ -29,12 +29,12 @@ def ActualizarCantViviendasMzsCondominios(data):
     for row in data:
         if len(row) == 1:
             sql_query = """
-            exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}' '{zona}'
+            exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}', '{zona}'
             """.format(ubigeo=str(row[0]), zona="99999")
             cursor.execute(sql_query)
         elif len(row) == 2:
             sql_query = """
-            exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}' '{zona}'
+            exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}', '{zona}'
                 """.format(ubigeo=str(row[0]), zona=str(row[1]))
             cursor.execute(sql_query)
 
