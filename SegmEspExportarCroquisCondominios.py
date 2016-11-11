@@ -618,52 +618,18 @@ def ExportarCroquisUrbanoZona(where_expression):
             TextElement6.text = row4[2]
             TextElement7.text = row4[3]
 
-        #if lyrFile1.supports("LABELCLASSES"):
-        #    for lblclass in lyrFile1.labelClasses:
-        #        lblclass.expression = '"%s" &"AEU "& [AEU_FINAL] &"/"&[CANT_VIV] & "%s"' % (
-        #            "<FNT size='5' >", "</FNT>")
-        #        # lblclass.expression = '[AEU_FINAL]'
-        #        lblclass.showClassLabels = True
-#
-#
-        #if lyrFile2.supports("LABELCLASSES"):
-        #    for lblclass3 in lyrFile2.labelClasses:
-        #        lblclass3.expression = '[MANZANA]&"/"&[VIV_MZ]'
-        #        lblclass3.showClassLabels = True
 
-
-
-
-        #lyrFile2.showLabels = True
-        #arcpy.mapping.AddLayer(df, lyrFile2)
-        #arcpy.RefreshActiveView()
-#
-        #lyrFile1.showLabels = True
         arcpy.mapping.AddLayer(df, lyrFile1)
         arcpy.RefreshActiveView()
 
-
-        #arcpy.mapping.AddLayer(df, lyrFile3)
-        #arcpy.RefreshActiveView()
-#
-        #ddp = mxd.dataDrivenPages
-        #indexLayer = ddp.indexLayer
-
-
-        #arcpy.SelectLayerByAttribute_management(indexLayer, "NEW_SELECTION", where_inicial)
-        #for indexPage in ddp.selectedPages:
-        #    ddp.currentPageID = indexPage
-        #    out = Path_urbano + "\\" + str(ubigeo) + "\\" + str(zona) + "\\" + str(ubigeo) + str(zona) + ".pdf"
-        #    ddp.exportToPDF(out, "CURRENT")
         df.extent = lyrFile1.getSelectedExtent()
         df.scale = df.scale *1.2
 
         out = Path_urbano + "\\" + str(row_seccion[0]) + "\\" + str(row_seccion[1]) + "\\" + codigo + ".pdf"
-        #print out
+
         arcpy.mapping.ExportToPDF(mxd,out , "PAGE_LAYOUT")
 
         arcpy.mapping.RemoveLayer(df, lyrFile1)
-        #arcpy.mapping.RemoveLayer(df, lyrFile2)
 
 
         del mxd

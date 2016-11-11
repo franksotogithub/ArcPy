@@ -32,8 +32,7 @@ arcpy.env.overwriteOutput = True
 #    arcpy.CalculateField_management(MZS, "IDMANZANA", expression, "PYTHON_9.3")
 #
 
-
-def ImportarTablasTrabajo(ubigeos):
+def ImportarTablasTrabajo(data,campos):
     arcpy.env.overwriteOutput = True
     MZS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
     VIVIENDAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS.shp"
@@ -42,8 +41,6 @@ def ImportarTablasTrabajo(ubigeos):
     PUNTOS_INICIO_shp = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/PuntosInicio/PUNTOS_INICIO.shp"
     EJES_VIALES="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_EJES_VIALES.shp"
     MZS_CONDOMINIOS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS_CONDOMINIOS.dbf"
-
-
     if arcpy.Exists("PruebaSegmentacion.sde") == False:
         arcpy.CreateDatabaseConnection_management("Database Connections",
                                                   "PruebaSegmentacion.sde",
@@ -58,57 +55,37 @@ def ImportarTablasTrabajo(ubigeos):
                                                   "#",
                                                   "#",
                                                   "#")
-
-
-#    if arcpy.Exists(VIVIENDAS):
-#        arcpy.Delete_management(VIVIENDAS)
-#    if arcpy.Exists(MZS):
-#        arcpy.Delete_management(MZS)
-#
-#    if arcpy.Exists(ZONAS):
-#        arcpy.Delete_management(ZONAS)
-#
-#    if arcpy.Exists(EJES_VIALES):
-#        arcpy.Delete_management(EJES_VIALES)
-#
-#    if arcpy.Exists(PUNTOS_INICIO_shp):
-#        arcpy.Delete_management(PUNTOS_INICIO_shp)
-#
-#    if arcpy.Exists(BLOQUES):
-#        arcpy.Delete_management(BLOQUES)
-
     arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
 
-    where_expression=UBIGEO.ExpresionUbigeosImportacion(ubigeos)
-    arcpy.FeatureClassToFeatureClass_conversion("CPV_SEGMENTACION.dbo.TB_MZS",
-                                                "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/",
-                                                'TB_MZS.shp',where_expression)
 
+    where_expression=UBIGEO.Expresion(data,campos)
+    temp_ubigeos=[]
+    for el in data:
+        temp_ubigeos.append([el[0]])
 
-    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.TB_PUNTO_INICIO",
-                          PUNTOS_INICIO_shp
-                          )
+    #ubigeos=list(set(temp_ubigeos))
 
+    where_expression_ejes_viales= UBIGEO.Expresion(temp_ubigeos,["UBIGEO"])
+    #print where_expression_ejes_viales
+    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.TB_PUNTO_INICIO", PUNTOS_INICIO_shp, where_expression)
 
-    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.VW_MANZANA",MZS, where_expression)
+    arcpy.Select_analysis("CPV_SEGMENTACION.dbo.VW_MANZANA", MZS, where_expression)
 
     arcpy.Select_analysis("CPV_SEGMENTACION.dbo.VW_ZONA_CENSAL",
                                                 ZONAS
                                                 ,where_expression)
+
     arcpy.Select_analysis("CPV_SEGMENTACION.sde.VW_VIVIENDAS_U3",
                                                 VIVIENDAS
                                                 ,where_expression)
 
     arcpy.Select_analysis("CPV_SEGMENTACION.dbo.TB_EJE_VIAL",
                                                 EJES_VIALES
-                                                , where_expression)
+                                                , where_expression_ejes_viales)
 
     arcpy.TableToTable_conversion('CPV_SEGMENTACION.sde.VW_MZS_CONDOMINIOS', 'D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/', 'TB_MZS_CONDOMINIOS.dbf')
-
-
     arcpy.env.workspace = r"D:/ShapesPruebasSegmentacionUrbanaCondominios"
     arcpy.DeleteField_management(MZS, ['AEU','IDMANZANA'])
-
     arcpy.AddField_management(MZS, "IDMANZANA", "TEXT")
     expression = "str(!UBIGEO!)+str(!ZONA!)+str(!MANZANA!)"
     arcpy.CalculateField_management(MZS, "IDMANZANA", expression, "PYTHON_9.3")
@@ -116,8 +93,7 @@ def ImportarTablasTrabajo(ubigeos):
     arcpy.AddField_management(MZS, "AEU_2", "SHORT")
     arcpy.AddField_management(MZS, "FLG_MZ", "SHORT")
 
-
-def CrearMatrizAdyacencia(ubigeos):
+def CrearMatrizAdyacencia(where_expression):
     arcpy.env.overwriteOutput = True
     ADYACENCIA="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/MatrizAdyacencia/adyacencia.dbf"
     MZS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
@@ -149,7 +125,7 @@ def CrearMatrizAdyacencia(ubigeos):
 
 
 
-    where_list = ubigeos
+
 
     inFeatures = MZS
     fieldName1 = "xCentroid"
@@ -225,7 +201,7 @@ def CrearMatrizAdyacencia(ubigeos):
                               fieldPrecision, fieldScale)
 
 
-    where_expression=UBIGEO.ExpresionUbigeos(ubigeos)
+    #where_expression=UBIGEO.ExpresionUbigeos(ubigeos)
 
     for row in arcpy.da.SearchCursor(ZONAS, ["UBIGEO", "ZONA"],where_expression):
         where_expression2=' "UBIGEO"=\'%s\' AND "ZONA"=\'%s\' ' % (row[0], row[1])
@@ -441,7 +417,6 @@ def CrearMatrizAdyacencia(ubigeos):
         arcpy.Delete_management("in_memory/VoronoiSplitLine" + desc)
         arcpy.Delete_management("in_memory/VoronoiLine" + desc)
 
-
 def ExportarTablasAdyacencia():
     arcpy.env.overwriteOutput = True
     ADYACENCIA = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/MatrizAdyacencia/adyacencia.dbf"
@@ -463,7 +438,6 @@ def ExportarTablasAdyacencia():
     arcpy.FeatureClassToGeodatabase_conversion([MZS_TRABAJO],
                                                'Database Connections/PruebaSegmentacion.sde/')
 
-
 def CrearViviendasOrdenadas():
     arcpy.env.overwriteOutput = True
     arcpy.env.workspace = r"D:/ShapesPruebasSegmentacionUrbanaCondominios"
@@ -480,19 +454,16 @@ def CrearViviendasOrdenadas():
     arcpy.AddField_management(VIVIENDAS_ORDENADAS, "FLG_CORTE", "SHORT")
     arcpy.AddField_management(VIVIENDAS_ORDENADAS, "FLG_MZ", "SHORT")
 
-def EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos):
+def EnumerarAEUEnViviendasDeManzanasCantVivMayores16(where_expression):
     arcpy.env.overwriteOutput = True
     MZS="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
     VIVIENDAS="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS.shp"
     VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
     ZONAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
-    #VIVIENDAS_OR_MAX = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/VIVIENDAS_OR_MAX"
     VIVIENDAS_AEU_OR_MAX="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/VIVIENDAS_AEU_OR_MAX"
     VIVIENDAS_MZS_OR_MAX = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/VIVIENDAS_MZS_OR_MAX"
-    #arcpy.AddField_management(MZS_AEU_dbf, "SECCION", "SHORT")
     MZS_CONDOMINIOS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS_CONDOMINIOS.dbf"
-    #TB_BLOQUES="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_BLOQUES.dbf"
-    #arcpy.management.CopyFeatures("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_RUTAS.shp", RUTAS)
+
 
     arcpy.MakeFeatureLayer_management(VIVIENDAS_ORDENADAS, "viviendas_ordenadas")
 
@@ -501,17 +472,7 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos):
 
     if arcpy.Exists(VIVIENDAS_MZS_OR_MAX):
         arcpy.Delete_management(VIVIENDAS_MZS_OR_MAX)
-
-    #arcpy.AddField_management(MZS, "IDMANZANA", "TEXT")
-
-
-    #arcpy.MakeFeatureLayer_management(MZS, "mzs", "VIV_MZS>16")
-
-    where_list=ubigeos
     m = 0
-    where_expression = ""
-
-    where_expression=UBIGEO.ExpresionUbigeos(ubigeos)
 
 
     for row in arcpy.da.SearchCursor(ZONAS,["UBIGEO", "ZONA"],where_expression):
@@ -770,9 +731,6 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos):
     #            cursor2.updateRow(row2)
     #    del cursor2
 
-
-
-
 def CrearViviendasCortes():
     arcpy.env.overwriteOutput = True
     VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
@@ -886,36 +844,13 @@ def CrearViviendasCortes():
 
     #arcpy.SymDiff_analysis(VIVIENDAS_AEU_OR_MAX)
 
-#
-#def EnumerarAEUEnViviendasCondominios(row1):
-#    VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
-#    TB_BLOQUES = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_BLOQUES"
-#    arcpy.MakeFeatureLayer_management(VIVIENDAS_ORDENADAS, "viviendas_ordenadas")
-#    where_expression_viv_cond = " UBIGEO=\'" + str(row1[0]) + "\'  AND  ZONA=\'" + str(row1[1]) + "\' AND MANZANA=\'" + str(row1[2]) + "\' AND (P29=1 or P29=3) AND (P23<>\'\')  "
-#    ################OBTENEMOS LA CANTIDAD DE BLOQUES DEL CONDOMINIO EN LA MANZANA############################
-#    # P19A EDIFICACION
-#    # P29 USO DE LOCAL = 1 2 3 4 5 6 ( 1 .- VIVIENDA 3 .- VIVENDA ESTABLECIMIENTO 6 .- PUERTA DE CONDOMINIO)
-#    # P29M representa lo mismo que el P29 solo que es rellenado cuando solo representa un condominio
-#    # P23 Numero de bloque al cual pertenece el registro, si el registro tiene (P29=6 y P29_1 =2 es decir condominio)   representa la cantidad de bloques que tiene el condominio
-#    cant_bloques = 0
-#    arcpy.SelectLayerByAttribute_management("viviendas_ordenadas", "NEW_SELECTION", where_expression_viv_cond)
-#    stats = [["ID_REG_OR", "COUNT"]]
-#    casefield = ["UBIGEO", "CODCCPP", "ZONA", "MANZANA", "P19A","P23"]
-#
-#
-#    arcpy.Statistics_analysis("viviendas_ordenadas", TB_BLOQUES, stats, casefield)
-#
-
-
-
-
-def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
+def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(where_expression):
     arcpy.env.overwriteOutput = True
     ZONAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
     MZS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
     VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
     ZONA_AEU_MAX = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/ZONA_AEU_MAX"
-    where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
+    #where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
 
     if arcpy.Exists(ZONA_AEU_MAX):
         arcpy.Delete_management(ZONA_AEU_MAX)
@@ -984,16 +919,12 @@ def EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos):
 
     del row
 
-
-
-def AgruparManzanasCantVivMenoresIguales16(ubigeos):
+def AgruparManzanasCantVivMenoresIguales16(where_expression):
     arcpy.env.overwriteOutput = True
     ZONAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
     MZS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
-
     Lista_adyacencia = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/MatrizAdyacencia/lista_adyacencia.dbf"
-    #Lista_adyacencia = "lista_adyacencia.dbf"
-    where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
+
 
     for row  in arcpy.da.SearchCursor(ZONAS, ["UBIGEO","ZONA","CODCCPP"],where_expression):
         where_expression1 = "UBIGEO=\'" + str(row[0]) + "\' AND ZONA=\'" + str(row[1]) + "\'  AND VIV_MZ<=16 "
@@ -1003,7 +934,6 @@ def AgruparManzanasCantVivMenoresIguales16(ubigeos):
         print "zona: "+desc
         # Algoritmo Normal
 
-        #fc = "D:/ShapesPruebasSegmentacionUrbanaCondominios/Zones/" + desc
         fc = "D:/ShapesPruebasSegmentacionUrbanaCondominios/Zones/" + desc
 
         manzanas=[]
@@ -1098,7 +1028,6 @@ def CrearMZS_AEU(ubigeos):
     arcpy.DeleteField_management(MZS_MENORES_16, ['FID_','FREQUENCY','COUNT_MANZANA','VIV_MZ','AEU_2'])
     arcpy.Merge_management([MZS_AEU_1, MZS_MENORES_16],MZS_AEU_2 )
     arcpy.Sort_management(MZS_AEU_2, MZS_AEU, ["UBIGEO","CODCCPP","ZONA","FALSO_COD","AEU"])
-
 
 def CrearRutasPuntos():
     arcpy.env.overwriteOutput = True
@@ -1261,8 +1190,6 @@ def CrearRutasPuntos():
             #            str(row2[7])]
             #        cursor_insert.insertRow(rowArray)
 
-
-
 def CrearRutasPuntosCortes():
     arcpy.env.overwriteOutput = True
 
@@ -1298,11 +1225,6 @@ def CrearRutasPuntosCortes():
 
     for el in list_addfield:
         arcpy.AddField_management(TB_RUTAS_PUNTOS, el[0], el[1])
-
-
-
-
-
 
 def CrearRutasPreparacion():
 
@@ -1359,10 +1281,6 @@ def CrearRutasPreparacion():
 
     arcpy.CalculateField_management(MZS, "FLG_MZ", expression_2, "PYTHON_9.3", codeblock)
     arcpy.Buffer_analysis(TB_MZS_shp, TB_MZS_TRABAJO_BUFFER_shp, "0.31 Meters", "FULL", "ROUND", "NONE", "", "PLANAR")
-
-
-
-
 
 
     # Process: Feature To Line
@@ -1449,8 +1367,6 @@ def CrearRutasPreparacion():
 
     # Process: Multipart To Singlepart
     arcpy.MultipartToSinglepart_management(TB_RUTAS_DISSOLVE_ERASE_shp_2, TB_RUTAS_PREPARACION_shp)
-
-
 
 def RelacionarVerticeFinalInicioConAEUMax():
     arcpy.env.overwriteOutput = True
@@ -1584,9 +1500,6 @@ def RelacionarRutasLineasConAEUSegundaVivienda():
 
 
     arcpy.DeleteField_management(TB_RUTAS_1_shp,"TB_RUTAS_P"+field_delete+";TB_INT_RUT"+field_delete2)
-
-
-
 
 def RelacionarRutasLineasConAEU():
     arcpy.env.overwriteOutput = True
@@ -1722,8 +1635,6 @@ def RelacionarRutasLineasConAEU():
 ##############Relacionando Rutas de Lineas con AEU usando la primera vivienda de cada AEU############################
 def RelacionarRutasLineasConAEUPrimeraPuerta():
     arcpy.env.overwriteOutput = True
-
-
     TB_RUTAS_1_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1.shp"
     TB_INTERSECT_RUTAS_PRIMERA_PUERTA = "in_memory\\TB_INTERSECT_RUTAS_PRIMERA_PUERTA"
     TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX = "in_memory\\TB_INT_RUTAS_PRIMERA_PUERTA_AEU_MAX"
@@ -1846,9 +1757,6 @@ def ActualizarRutasViviendasMenoresIguales16():
 
     arcpy.DeleteField_management(TB_RUTAS_2_shp,"TB_RUTAS_P;TB_RUTAS_1;TB_RUTAS_2;TB_RUTAS_3;TB_RUTAS_4;TB_RUTAS_5;;TB_RUTAS_6;MZS_AEU_OI;MZS_AEU_FI;MZS_AEU_UB;MZS_AEU_ZO;MZS_AEU_MA;MZS_AEU_AE;MZS_AEU_CA;MZS_AEU_ID;MZS_AEU_FI;MZS_AEU__1;MZS_AEU_ID;MZS_AEU__2;MZS_AEU_CO;MZS_AEU_FA")
 
-
-
-
 def CrearLineasAEUFinal():
     TB_PRIMERA_VIVIENDA_AEU_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_PRIMERA_VIVIENDA_AEU.shp"
     TB_RUTAS_1_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_1.shp"
@@ -1931,12 +1839,6 @@ def CrearLineasAEUFinal():
     # Process: Delete Field
     arcpy.DeleteField_management(TB_RUTAS_LINEAS_shp,
                                  "TB_RUTASS_;TB_RUTASS1;TB_RUTAS_1;TB_RUTAS_2;TB_RUTAS_3;TB_RUTAS_4;TB_RUTAS_5;MZS_AEU_OI;MZS_AEU_UB;MZS_AEU_ZO;MZS_AEU_MA;MZS_AEU_AE;MZS_AEU_CA;MZS_AEU_ID;MZS_AEU_FI;MZS_AEU__1;MZS_AEU_CO;MZS_AEU__2;MZS_AEU_FA")
-
-
-
-
-
-
 
 def UnirManzanasConViviendasCeros():
     TB_RUTAS_LINEAS_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_LINEAS.shp"
@@ -2057,10 +1959,6 @@ def UnirManzanasConViviendasCeros():
     # Process: Delete Field
     arcpy.DeleteField_management(TB_SEGUNDA_PASADA_shp,
                                  "TB_RUTAS_I;TB_RUTAS_1;TB_RUTAS_2;TB_RUTAS_3;TB_RUTAS_4;TB_RUTAS_5;TB_RUTAS_6;TB_RUTAS_7;TB_RUTAS_8;TB_RUTAS_9;TB_RUTA_10;TB_RUTA_11;TB_RUTA_12;TB_RUTA_13;TB_RUTA_14;TB_RUTA_15;TB_RUTA_16;TB_RUTA_17;TB_RUTA_18;TB_RUTA_19;TB_RUTA_20;TB_RUTA_21;TB_RUTA_22;TB_RUTA_23;TB_RUTA_24;TB_RUTA_25;TB_RUTA_26")
-
-
-
-
 
 def CrearTablaSegundaPasada():
     TB_RUTAS_LINEAS_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_LINEAS.shp"
@@ -2196,14 +2094,7 @@ def CrearTablaSegundaPasada():
 
 def ActualizarRutasAEUSegundaPasada():
     arcpy.env.workspace = r"D:/ShapesPruebasSegmentacionUrbanaCondominios"
-   #MZS_AEU= "D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/MZS_AEU.dbf"
-   #MZS_TRABAJO="D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/TB_MZS_TRABAJO.shp"
-   #VIVIENDAS="D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/TB_VIVIENDAS_U_TRABAJO.shp"
-   #RUTAS="D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/TB_RUTAS.shp"
-
-
     SEGUNDA_PASADA = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\SegundaPasada\\TB_SEGUNDA_PASADA.shp"
-
     TB_RUTAS_LINEAS_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_LINEAS.shp"
     MZS_AEU_dbf = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\MZS_AEU.dbf"
     TB_VIVIENDAS_ORDENADAS_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\TB_VIVIENDAS_ORDENADAS.shp"
@@ -2234,16 +2125,6 @@ def ActualizarRutasAEUSegundaPasada():
 
             or_max=0
 
-
-#            with arcpy.da.SearchCursor(TB_VIVIENDAS_ORDENADAS_shp, ['AEU', 'OR_VIV_AEU'], where_2) as cursor7:
-#                for row7 in cursor7:
-#                    if or_max<int(row7[1]):
-#                        or_max=int(row7[1])
-#
-#            del cursor7
-#
-#            or_max=or_max+1
-#
             with arcpy.da.UpdateCursor(TB_VIVIENDAS_ORDENADAS_shp,['AEU','OR_VIV_AEU'],where_viviendas ) as cursor10:
                 for row10 in cursor10:
                     row10[0] = int(numero_aeu)
@@ -2261,46 +2142,7 @@ def ActualizarRutasAEUSegundaPasada():
 
 
 
-         #  with arcpy.da.UpdateCursor(RUTAS, ['flg'], where_2) as cursor12:
-         #      for row12 in cursor12:
-         #          row12[0] = 1
-         #          cursor12.updateRow(row12)
-         #  del cursor12
-
-def CodigoFalso():
-    MZS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
-    MZS_AEU_dbf = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\MZS_AEU.dbf"
-    MIN_AEU = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\Renumerar\\MIN_AEU"
-    MIN_AEU_SORT = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\Renumerar\\MIN_AEU_SORT"
-    #arcpy.AddField_management(MZS,
-    #                          "FALSCOD2", "TEXT")
- #   expresion= """" def FindLabel ( [MANZANA] ): mzs_temp=[MANZANA][0:3]
- #    mzs_int=int(mzs_temp)
- #   mzs=str(mzs_int)+[MANZANA][3:]
-#
- # return mzs
- #   """"
-    expression_2 = "idcodfalso(!FALSO_COD!)"
-
-    codeblock = """def idcodfalso(FALSO_COD):\n  return "0" * (3 - len(str(FALSO_COD)))+str(FALSO_COD)"""
-
-    arcpy.AddField_management(MZS,
-                              "O", "TEXT")
-    arcpy.CalculateField_management(MZS, "O", expression_2, "PYTHON_9.3", codeblock)
-
-
-
-    #arcpy.CalculateField_management(MZS, "O", expresion, {expression_type}, {code_block})
-    #arcpy.CalculateField_management(MZS, "O", expresion, {expression_type}, {code_block})
-    #CalculateField_management(in_table, field, expression, {expression_type}, {code_block})
-    #arcpy.CalculateField_management(MZS, "FALSCOD2", )
-
-
-
-    #arcpy.Statistics_analysis(MZS, MIN_AEU, [["IDFALSO", "MIN"]], ["UBIGEO", "ZONA", "AEU"])
-    #arcpy.Sort_management(MIN, MIN_AEU_SORT, ["MIN_IDFALSO", "AEU"])
-
-def Renumerar_AEU(ubigeos):
+def Renumerar_AEU(where_expression):
     arcpy.env.workspace = r"D:/ShapesPruebasSegmentacionUrbanaCondominios"
     arcpy.env.overwriteOutput = True
     MIN_AEU = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\Renumerar\\MIN_AEU"
@@ -2310,44 +2152,7 @@ def Renumerar_AEU(ubigeos):
     TB_MZS_shp = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
     ZONAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
     MZS_AEU_dbf = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\MZS_AEU.dbf"
-    #TB_VIVIENDAS_ORDENADAS_shp = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\TB_VIVIENDAS_ORDENADAS.shp"
-    #MZS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
 
-
-    #arcpy.AddField_management(MZS_AEU_dbf, "AEU_FINAL", "SHORT")
-
-
-
-
-
-   # if arcpy.Exists("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_MZS_TRABAJO.shp"):
-   #     arcpy.Delete_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_MZS_TRABAJO.shp")
-   # if arcpy.Exists("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/MZS_AEU.dbf"):
-   #     arcpy.Delete_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/MZS_AEU.dbf")
-   # if arcpy.Exists("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_RUTAS.shp"):
-   #     arcpy.Delete_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_RUTAS.shp")
-   # if arcpy.Exists("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_VIVIENDAS_U_TRABAJO.shp"):
-   #     arcpy.Delete_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_VIVIENDAS_U_TRABAJO.shp")
-   # if arcpy.Exists(MIN_AEU):
-   #     arcpy.Delete_management(MIN_AEU)
-   # if arcpy.Exists(MIN_AEU_SORT):
-   #     arcpy.Delete_management(MIN_AEU_SORT)
-   # if arcpy.Exists(AEU_CANT_VIV):
-   #     arcpy.Delete_management(AEU_CANT_VIV)
-
-#    arcpy.management.CopyFeatures("D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/TB_MZS_TRABAJO.shp",
-#                                  "D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_MZS_TRABAJO.shp")
-#    arcpy.AddField_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_MZS_TRABAJO.shp", "AEU_FINAL",
-#                              "SHORT")
-#    arcpy.Copy_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/MZS_AEU.dbf",
-#                          "D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/MZS_AEU.dbf")
-#    arcpy.AddField_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/MZS_AEU.dbf", "AEU_FINAL", "SHORT")
-#
-#    arcpy.management.CopyFeatures("D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/TB_RUTAS.shp",
-#                                  "D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_RUTAS.shp")
-#    arcpy.AddField_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_RUTAS.shp", "AEU_FINAL", "SHORT")
-#    arcpy.management.CopyFeatures("D:/ShapesPruebasSegmentacionUrbanaCondominios/SegundaPasada/TB_VIVIENDAS_U_TRABAJO.shp",
-#                                  "D:/ShapesPruebasSegmentacionUrbanaCondominios/Renumerar/TB_VIVIENDAS_U_TRABAJO.shp")
     arcpy.AddField_management(MZS_AEU_dbf,
                               "AEU_FINAL", "SHORT")
 
@@ -2383,7 +2188,7 @@ def Renumerar_AEU(ubigeos):
     arcpy.Sort_management(MIN_AEU, MIN_AEU_SORT, ["MIN_IDFALSO", "AEU"])
     arcpy.MakeTableView_management(MIN_AEU_SORT, "min_aeu_sort")
 
-    where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
+    #where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
 
     for row in arcpy.da.SearchCursor(ZONAS, ["UBIGEO", "ZONA"], where_expression):
 
@@ -2508,14 +2313,260 @@ def CrearTB_AEUS():
     arcpy.DeleteField_management(AEUS_LINEAS, ["SUM_CANT_V"])
     arcpy.DeleteField_management(AEUS_PUNTOS, ["SUM_CANT_V"])
 
+def EnumerarSecciones(where_expression):
+    arcpy.env.overwriteOutput = True
+    arcpy.env.workspace = r"D:/ShapesPruebasSegmentacionUrbanaCondominios"
+    MZS_AEU_TEMP = "in_memory\\MZS_AEU_dbf"
+    ZONA_CANT_AEU="in_memory\\ZONA_CANT_AEU"
+    ZONA_AEU = "in_memory\\ZONA_AEU"
+    AEUS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS.dbf"
+    AEUS_LINEAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS_LINEAS.shp"
+    AEUS_PUNTOS = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\Renumerar\\TB_AEUS_PUNTOS.shp"
+    MZS_AEU="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/MZS_AEU.dbf"
+    RUTAS_LINEAS="D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_LINEAS.shp"
+    RUTAS_PUNTOS = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\CrearRepresentacionAEU\\TB_RUTAS_PUNTOS.shp"
+
+    arcpy.Sort_management("D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/MZS_AEU.dbf", MZS_AEU_TEMP,
+                          ["UBIGEO", "ZONA", "AEU_FINAL"])
+
+    arcpy.Statistics_analysis(MZS_AEU_TEMP,ZONA_AEU , [["CANT_VIV", "SUM"]],
+                              ["UBIGEO", "ZONA","AEU_FINAL"])  # SE OBTIENE LAS  AEU'S POR ZONA
+
+    arcpy.Statistics_analysis(ZONA_AEU,ZONA_CANT_AEU, [["AEU_FINAL", "COUNT"]], ["UBIGEO", "ZONA"]) # SE OBTIENE LA  CANTIDAD DE AEU'S POR ZONA
+
+    arcpy.AddField_management(RUTAS_LINEAS, "SECCION", "SHORT")
+    arcpy.AddField_management(MZS_AEU, "SECCION", "SHORT")
+    arcpy.AddField_management(ZONA_AEU, "SECCION", "SHORT")
+    arcpy.AddField_management(AEUS, "SECCION", "SHORT")
+    arcpy.AddField_management(AEUS_LINEAS, "SECCION", "SHORT")
+    arcpy.AddField_management(AEUS_LINEAS, "ORD_AEU", "SHORT")
+    arcpy.AddField_management(AEUS_PUNTOS, "SECCION", "SHORT")
+    arcpy.AddField_management(AEUS_PUNTOS, "ORD_AEU", "SHORT")
+    arcpy.AddField_management(RUTAS_PUNTOS, "SECCION", "SHORT")
+    arcpy.AddField_management(ZONA_CANT_AEU, "CANT_SECC", "SHORT")
+    arcpy.AddField_management(ZONA_CANT_AEU, "RESIDUO", "SHORT")
+    arcpy.AddField_management(ZONA_CANT_AEU, "CANT_AEU_SEC", "SHORT")
+
+    expression = "math.ceil(float( !COUNT_AEU_FINAL! )/6.0 )"
+    arcpy.CalculateField_management(ZONA_CANT_AEU, "CANT_SECC",expression,"PYTHON_9.3" )
+
+    expression2 = "math.floor(!COUNT_AEU_FINAL!/!CANT_SECC!)"
+    arcpy.CalculateField_management(ZONA_CANT_AEU, "CANT_AEU_SEC", expression2, "PYTHON_9.3")
+
+    expression3 = "!COUNT_AEU_FINAL!%!CANT_SECC!"
+    arcpy.CalculateField_management(ZONA_CANT_AEU, "RESIDUO", expression3,"PYTHON_9.3")
+
+
+    where_expression = ""
+
+    #where_expression=UBIGEO.ExpresionUbigeos(ubigeos)
+
+
+    cant_secciones=0
+    cant_aeu=0
+    cant_aeu_secc=0
+    residuo=0
+    residuo_temp=0
+
+    for row1 in arcpy.da.SearchCursor(ZONA_CANT_AEU,["UBIGEO", "ZONA", "COUNT_AEU_FINAL","CANT_SECC","CANT_AEU_SEC","RESIDUO"],where_expression):
+        where_expression2 = " UBIGEO=\'" + str(row1[0]) + "\'  AND  ZONA=\'" + str(row1[1])+"\'"
+
+        cant_aeu=int(row1[2])
+        cant_secciones=int(row1[3])
+        cant_aeu_secc=int(row1[4])
+        residuo=int(row1[5])
+
+        residuo_temp=residuo
+
+        seccion=1
+
+        i=1
+        m=0
+        ord_aeu=1
+        with arcpy.arcpy.da.UpdateCursor(ZONA_AEU, ['AEU_FINAL', 'SECCION'],where_expression2) as cursor2:
+            for row2 in cursor2:
+                row2[1]=seccion
+
+
+                where_expression3 = " UBIGEO=\'" + str(row1[0]) + "\'  AND  ZONA=\'" + str(row1[1]) + "\' AND AEU_FINAL="+str(row2[0])
+
+                with arcpy.da.UpdateCursor(AEUS, ['AEU_FINAL', 'SECCION'], where_expression3) as cursor3:
+                    for row3 in cursor3:
+                        row3[1]=seccion
+                        cursor3.updateRow(row3)
+                del cursor3
+
+
+                with arcpy.da.UpdateCursor(RUTAS_PUNTOS, ['AEU_FINAL', 'SECCION'], where_expression3) as cursor5:
+                    for row5 in cursor5:
+                        row5[1]=seccion
+                        cursor5.updateRow(row5)
+                del cursor5
+
+
+                with arcpy.da.UpdateCursor(RUTAS_LINEAS, ['AEU_FINAL', 'SECCION'], where_expression3) as cursor5:
+                    for row5 in cursor5:
+                        row5[1]=seccion
+                        cursor5.updateRow(row5)
+                del cursor5
+
+
+                with arcpy.da.UpdateCursor(AEUS_LINEAS, ['AEU_FINAL', 'SECCION','ORD_AEU'], where_expression3) as cursor6:
+                    for row6 in cursor6:
+                        row6[1]=seccion
+                        row6[2] = ord_aeu
+                        cursor6.updateRow(row6)
+                del cursor6
+
+
+
+                with arcpy.da.UpdateCursor(AEUS_PUNTOS, ['AEU_FINAL', 'SECCION','ORD_AEU'], where_expression3) as cursor5:
+                    for row5 in cursor5:
+                        row5[1]=seccion
+                        row5[2] = ord_aeu
+                        cursor5.updateRow(row5)
+                del cursor5
+
+
+
+                with arcpy.da.UpdateCursor(MZS_AEU, ['AEU_FINAL', 'SECCION'], where_expression3) as cursor7:
+                    for row7 in cursor7:
+                        row7[1] = seccion
+                        cursor7.updateRow(row7)
+                del cursor7
+                i = i + 1
+                ord_aeu = ord_aeu+1
+                if residuo_temp>0:
+                    if i>(cant_aeu_secc+1):
+                        i=1
+                        seccion=seccion+1
+                        residuo_temp=residuo_temp-1
+                        ord_aeu=1
+
+                else:
+                    if i > (cant_aeu_secc):
+                        i = 1
+                        seccion = seccion + 1
+                        ord_aeu = 1
+
+                cursor2.updateRow(row2)
+
+
+def CrearSecciones(where_expression):
+    arcpy.env.overwriteOutput = True
+    AEUS_LINEAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS_LINEAS.shp"
+    AEUS_PUNTOS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS_PUNTOS.shp"
+    SECCIONES="D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/EnumerarSecciones/TB_SECCIONES.shp"
+    ZONA_AEU = "in_memory\\ZONA_AEU_2"
+    ZONA_SECCION = "in_memory\\ZONA_SECCION_2"
+    MZS_AEU = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/MZS_AEU.dbf"
+    MZS_AEU_TEMP = "in_memory\\MZS_AEU_dbf_2"
+
+
+    if arcpy.Exists(SECCIONES):
+        arcpy.Delete_management(SECCIONES)
+
+    arcpy.Sort_management(MZS_AEU, MZS_AEU_TEMP,
+                          ["UBIGEO", "CODCCPP","ZONA", "SECCION", "AEU_FINAL"])
+
+    arcpy.Statistics_analysis(MZS_AEU_TEMP, ZONA_AEU, [["CANT_VIV", "SUM"]],
+                          ["UBIGEO", "CODCCPP","ZONA","SECCION" ,"AEU_FINAL"])  # SE OBTIENE LAS  AEU'S POR ZONA
+
+    arcpy.Statistics_analysis(ZONA_AEU, ZONA_SECCION, [["SUM_CANT_VIV", "SUM"]],
+                              ["UBIGEO", "CODCCPP","ZONA", "SECCION"])  # SE OBTIENE LAS  AEU'S POR ZONA
+
+
+    arcpy.MakeFeatureLayer_management(AEUS_LINEAS,"aeus_lineas")
+
+    arcpy.MakeFeatureLayer_management(AEUS_PUNTOS, "aeus_puntos")
+
+
+    #where_expression = UBIGEO.ExpresionUbigeos(ubigeos)
+    j=0
+
+
+
+    for row1 in arcpy.da.SearchCursor(ZONA_SECCION, ["UBIGEO", "ZONA", "SECCION","SUM_SUM_CANT_VIV","CODCCPP"], where_expression):
+        where_expression2 = " UBIGEO=\'" + str(row1[0]) + "\'  AND  ZONA=\'" + str(row1[1])  + "\'  AND  SECCION=" + str(row1[2])
+        print where_expression2
+        arcpy.SelectLayerByAttribute_management("aeus_lineas", "NEW_SELECTION", where_expression2)
+        print arcpy.GetCount_management("aeus_lineas").getOutput(0)
+        if (int(arcpy.GetCount_management("aeus_lineas").getOutput(0))>0):
+
+            out_feature_1 = "in_memory/Buffer" + str(row1[0]) + str(row1[1]) + str(row1[2])
+            out_feature_2 = "in_memory/FeatureToLine" + str(row1[0]) + str(row1[1]) + str(row1[2])
+            out_feature_3 = "in_memory/FeatureToPolygon" + str(row1[0]) + str(row1[1]) + str(row1[2])
+            out_feature = "D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/Mapas/Dissolve/" + str(row1[0]) + str(
+                row1[1]) + str(row1[2]) + ".shp"
+
+
+            arcpy.Buffer_analysis("aeus_lineas",out_feature_1, '5 METERS','FULL', 'ROUND','LIST',['UBIGEO','ZONA','SECCION'])
+            arcpy.FeatureToLine_management(out_feature_1,out_feature_2 )
+            arcpy.FeatureToPolygon_management(out_feature_2,out_feature_3)
+            arcpy.Dissolve_management( out_feature_3,out_feature )
+
+            arcpy.AddField_management(out_feature, "UBIGEO", "TEXT")
+            arcpy.AddField_management(out_feature, "CODCCPP", "TEXT")
+            arcpy.AddField_management(out_feature, "ZONA", "TEXT")
+            arcpy.AddField_management(out_feature, "SECCION", "SHORT")
+            arcpy.AddField_management(out_feature, "CANT_VIV", "SHORT")
+
+
+
+            calculate_expression1="\'"+str(row1[0])+"\'"
+            calculate_expression2 = "\'" + str(row1[1])+"\'"
+
+            calculate_expression3 = str(row1[2])
+            calculate_expression4 = str(row1[3])
+
+            calculate_expression5 = "\'" + str(row1[4]) + "\'"
+
+            arcpy.CalculateField_management(out_feature, "UBIGEO",calculate_expression1 , "PYTHON_9.3")
+            arcpy.CalculateField_management(out_feature, "CODCCPP", calculate_expression5, "PYTHON_9.3")
+            arcpy.CalculateField_management(out_feature, "ZONA", calculate_expression2, "PYTHON_9.3")
+            arcpy.CalculateField_management(out_feature, "SECCION", calculate_expression3, "PYTHON_9.3")
+            arcpy.CalculateField_management(out_feature, "CANT_VIV", calculate_expression4, "PYTHON_9.3")
+
+            if (j == 0):
+                arcpy.CopyFeatures_management(out_feature, SECCIONES)
+            else:
+                arcpy.Append_management(out_feature, SECCIONES,"NO_TEST")
+            j = j + 1
+            arcpy.Delete_management(out_feature_1)
+            arcpy.Delete_management(out_feature_2)
+            arcpy.Delete_management(out_feature_3)
+
+        else:
+
+            #out_feature = "in_memory/Buffer" + str(row1[0]) + str(row1[1]) + str(row1[2])
+            out_feature = "D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/Mapas/Dissolve/" + str(row1[0]) + str(
+                row1[1]) + str(row1[2]) + ".shp"
+            #out_feature = "D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/Mapas/Dissolve/" + str(row1[0]) + str(
+            #    row1[1]) + str(row1[2]) + ".shp"
+            arcpy.SelectLayerByAttribute_management("aeus_puntos", "NEW_SELECTION", where_expression2)
+
+            arcpy.Buffer_analysis("aeus_puntos",out_feature, '5 METERS','FULL', 'ROUND','LIST',['UBIGEO','CODCCPP','ZONA','SECCION'])
+            arcpy.AddField_management(out_feature, "CANT_VIV", "SHORT")
+            calculate_expression4 = str(row1[3])
+            arcpy.CalculateField_management(out_feature, "CANT_VIV", calculate_expression4, "PYTHON_9.3")
+
+            #arcpy.Dissolve_management(out_feature_1, out_feature)
+
+            if (j == 0):
+                arcpy.CopyFeatures_management(out_feature, SECCIONES)
+            else:
+                arcpy.Append_management(out_feature, SECCIONES,"NO_TEST")
+            j = j + 1
+
+            arcpy.Delete_management(out_feature)
+
+    del row1
 
 def CrearRutasMultipart():
 
     RUTAS_LINEAS="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_LINEAS.shp"
     RUTAS_LINEAS_MULTIPART="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_LINEAS_MULTIPART.shp"
     arcpy.MultipartToSinglepart_management(RUTAS_LINEAS,RUTAS_LINEAS_MULTIPART)
-
-
 
 def ModelarTablas(ubigeos):
     AEUS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS.dbf"
@@ -2616,51 +2667,6 @@ def ModelarTablas(ubigeos):
     expression = "str(!UBIGEO!)+str(!CODCCPP!)+str(!ZONA!)+str(!SECCION!)"
 
     arcpy.CalculateField_management(SECCIONES, "LLAVE_SECC", expression, "PYTHON_9.3")
-
-
-#def EliminarRegistros(ubigeos):
-#    arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
-#    SEGM_ESP_SECCIONES = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_SECCION"
-#    SEGM_ESP_AEUS = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_AEU"
-#    SEGM_ESP_AEUS_LINEAS = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_AEU_LINEA"
-#    SEGM_ESP_RUTAS = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_RUTA"
-#    SEGM_ESP_RUTAS_LINEAS = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_RUTA_LINEA"
-#    SEGM_ESP_VIVIENDAS_U = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_VIVIENDA_U"
-#    where_list=UBIGEO.ExpresionUbigeosImportacion(ubigeos)
-#
-#    arcpy.MakeFeatureLayer_management(SEGM_ESP_SECCIONES, "tmp_secciones", where_list)
-#    arcpy.MakeFeatureLayer_management(SEGM_ESP_AEUS_LINEAS, "tmp_aeus_lineas", where_list)
-#    arcpy.MakeFeatureLayer_management(SEGM_ESP_RUTAS_LINEAS, "tmp_rutas_lineas", where_list)
-#    arcpy.MakeFeatureLayer_management(SEGM_ESP_VIVIENDAS_U, "tmp_viviendas_u", where_list)
-#    arcpy.MakeTableView_management(SEGM_ESP_AEUS, "tmp_aeus", where_list)
-#    arcpy.MakeTableView_management(SEGM_ESP_RUTAS, "tmp_rutas", where_list)
-#
-#
-#    try:
-#
-#
-#        if int(arcpy.GetCount_management("tmp_secciones").getOutput(0)) > 0:
-#            arcpy.TruncateTable_management("tmp_secciones")
-#
-#        if int(arcpy.GetCount_management("tmp_aeus_lineas").getOutput(0)) > 0:
-#            arcpy.TruncateTable_management("tmp_aeus_lineas")
-#
-#        if int(arcpy.GetCount_management("tmp_rutas_lineas").getOutput(0)) > 0:
-#            arcpy.TruncateTable_management("tmp_rutas_lineas")
-#
-#        if int(arcpy.GetCount_management("tmp_viviendas_u").getOutput(0)) > 0:
-#            arcpy.TruncateTable_management("tmp_viviendas_u")
-#
-#        if int(arcpy.GetCount_management("tmp_aeus").getOutput(0)) > 0:
-#            arcpy.TruncateTable_management("tmp_aeus")
-#
-#        if int(arcpy.GetCount_management("tmp_rutas").getOutput(0)) > 0:
-#            arcpy.TruncateTable_management("tmp_rutas")
-#
-#            #arcpy.DeleteRows_management(AEUS_TEMP)
-#
-#    except Exception as err:
-#        print(err.args[0])
 
 def InsertarRegistros(ubigeos):
     arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
@@ -2884,6 +2890,432 @@ def InsertarRegistros(ubigeos):
 
     #arcpy.AddField_management(MZS, "AEU", "SHORT")
 
-#def PruebaViviendas2():
+def CrearCarpetas(data,campos):
+    arcpy.env.workspace = "D:/ShapesPruebasSegmentacionUrbanaCondominios"
+    ZONAS = r"D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
+    Path_inicial = "\\\srv-fileserver\\CPV2017"
+
+    if os.path.exists(Path_inicial + "\\croquis_segm_seg") == False:
+        os.mkdir(Path_inicial + "\\croquis_segm_seg")
+
+    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+
+    if os.path.exists(Path_urbano) == False:
+        os.mkdir(Path_urbano)
+
+    for el in data:
+        if os.path.exists(Path_urbano + "\\" + str(el[0])) == False:
+            os.mkdir(Path_urbano + "\\" + str(el[0]))
+
+    where_expression=UBIGEO.Expresion(data,campos)
+
+
+    with arcpy.da.SearchCursor(ZONAS, ['UBIGEO', 'ZONA'], where_expression) as cursor:
+        for row in cursor:
+            if os.path.exists(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1])) == False:
+                os.mkdir(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
+            else:
+                lista_directorios = os.listdir(Path_urbano + "\\" + str(el[0]) + "\\" + str(el[1]))
+                if (len(lista_directorios) > 0):
+                    for archivo in lista_directorios:
+                        shutil.rmtree(Path_urbano + "\\" + str(el[0]) + "\\" + str(el[1])+"\\"+str(archivo))
+    del row
+
+
+
+
+
+def ExportarCroquisUrbanoAEU(where_expression):
+    arcpy.env.workspace ="D:/ShapesPruebasSegmentacionUrbanaCondominios"
+    MZS_AEU_dbf = "D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\MZS_AEU.dbf"
+    RUTAS_LINEAS_MULTIPART = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_LINEAS_MULTIPART.shp"
+    RUTAS_LINEAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_LINEAS.shp"
+    RUTAS_PUNTOS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_PUNTOS.shp"
+    AEUS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS.dbf"
+    TB_MZS_shp = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
+    VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
+    ZONA_CENSAL  = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
+    TB_EJES_VIALES="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_EJES_VIALES.shp"
+    
+    Path_inicial = "\\\srv-fileserver\\CPV2017"
+    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+    #print where_expression
+    for row in arcpy.da.SearchCursor(AEUS, ["UBIGEO", "ZONA",  "AEU_FINAL","CANT_VIV","CODCCPP","SECCION"],where_expression):
+        where_expression2 = ' "UBIGEO"=\'' + str(row[0]) + '\' AND "ZONA" =\'' + str(row[1]) + '\' AND AEU_FINAL=' + str(row[2])
+        where_zona =' "UBIGEO"=\'' + str(row[0]) + '\' AND "ZONA" =\'' + str(row[1]) + '\' '
+
+        i=0
+        data=[]
+
+
+        for row1 in arcpy.da.SearchCursor(MZS_AEU_dbf, ["UBIGEO","ZONA","MANZANA"],where_expression2):
+
+            data.append([str(row1[0]),str(row1[1]),str(row1[2])])
+
+
+        where_temporal=UBIGEO.Expresion(data,["UBIGEO","ZONA","MANZANA"])
+
+        where_rutas = where_expression2
+
+
+        where_manzanas=where_temporal
+
+
+        mxd = arcpy.mapping.MapDocument(
+            r"D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Mxd/CroquisSegmentacionUrbanoFinal.mxd")
+        df = arcpy.mapping.ListDataFrames(mxd, "Layers")[0]
+
+
+        arcpy.MakeFeatureLayer_management(TB_MZS_shp, "manzanas", where_manzanas)
+        arcpy.MakeFeatureLayer_management(RUTAS_LINEAS_MULTIPART, "rutas_lineas", where_rutas)
+        arcpy.MakeFeatureLayer_management(RUTAS_PUNTOS, "rutas_puntos", where_rutas)
+
+
+
+        lyrFile1 = arcpy.mapping.Layer("rutas_lineas")
+        lyrFile3 = arcpy.mapping.Layer("manzanas")
+        lyrFile4 = arcpy.mapping.Layer("rutas_puntos")
+
+        arcpy.ApplySymbologyFromLayer_management(lyrFile1,
+                                                 "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Layers/rutas_lineas.lyr")
+        arcpy.ApplySymbologyFromLayer_management(lyrFile3,
+                                                 "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Layers/manzana_final.lyr")
+
+        arcpy.ApplySymbologyFromLayer_management(lyrFile4,
+                                                 "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Layers/rutas_puntos.lyr")
+
+        arcpy.mapping.AddLayer(df, lyrFile1)
+        arcpy.RefreshActiveView()
+
+        arcpy.mapping.AddLayer(df, lyrFile3)
+        arcpy.RefreshActiveView()
+        arcpy.mapping.AddLayer(df, lyrFile4)
+        arcpy.RefreshActiveView()
+        viv_aeu = int(row[3])
+        seccion = "0" * (3 - len(str(row[5]))) + str(row[5])
+        aeu = "0" * (3 - len(str(row[2]))) + str(row[2])
+        ubigeo = str(row[0])
+        zona = UBIGEO.EtiquetaZona(str(row[1]))
+        codigo = str(row[0]) + str(row[1]) + seccion + aeu
+        TextElement1 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCDD")[0]
+        TextElement2 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCPP")[0]
+        TextElement3 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCDI")[0]
+        TextElement4 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "DEPARTAMENTO")[0]
+        TextElement5 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "PROVINCIA")[0]
+        TextElement6 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "DISTRITO")[0]
+        TextElement7 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "NOMCCPP")[0]
+        TextElement8 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "ZONA")[0]
+        TextElement9 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU")[0]
+        TextElement10 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION")[0]
+        TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "VIV_AEU")[0]
+        TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
+        TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
+        TextElement1.text = ubigeo[0:2]
+        TextElement2.text = ubigeo[2:4]
+        TextElement3.text = ubigeo[4:6]
+        TextElement8.text = zona
+        TextElement9.text = str(aeu)
+        TextElement10.text = seccion
+        TextElement11.text = str(viv_aeu)
+        TextElement12.text = "*"+str(codigo)+"*"
+        TextElement13.text="*"+str(codigo)+"*"
+
+
+
+        for row4 in arcpy.da.SearchCursor(ZONA_CENSAL, ['DEPARTAMEN', 'PROVINCIA', 'DISTRITO', 'NOMCCPP'],where_zona):
+            TextElement4.text = str(row4[0])
+            TextElement5.text = row4[1]
+            TextElement6.text = row4[2]
+            TextElement7.text = row4[3]
+
+
+        df.extent = lyrFile3.getSelectedExtent()
+        df.scale = df.scale
+
+        dflinea=arcpy.Polyline(arcpy.Array([ arcpy.Point (df.extent.XMin,df.extent.YMin) ,arcpy.Point(  df.extent.XMax,df.extent.YMax)]),df.spatialReference)
+        distancia=dflinea.getLength("GEODESIC","METERS")
+
+        if (float(distancia)<=50):
+            df.scale = df.scale*4
+
+        if (float(distancia)>50 and float(distancia)<=100):
+            df.scale = df.scale*3
+
+        if (float(distancia)>100 and float(distancia)<=490):
+            df.scale = df.scale*2
+
+        if (float(distancia)>490 and float(distancia)<=900):
+            df.scale = df.scale*1.5
+
+        if (float(distancia)>900 and float(distancia)<=1200):
+            df.scale = df.scale*1.25
+
+        if (float(distancia)>1200 and float(distancia)<=1800):
+            df.scale = df.scale*1.10
+
+        if (float(distancia)>1800):
+            df.scale = df.scale*1.05
+
+        out = Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]) + "\\" + codigo + ".pdf"
+        print out
+
+        arcpy.mapping.ExportToPDF(mxd,out , "PAGE_LAYOUT")
+        arcpy.mapping.RemoveLayer(df, lyrFile1)
+
+        arcpy.mapping.RemoveLayer(df, lyrFile3)
+        arcpy.mapping.RemoveLayer(df, lyrFile4)
+
+
+        del mxd
+        del df
+
+
+def ExportarCroquisUrbanoSeccion(where_expression):
+    arcpy.env.workspace ="D:/ShapesPruebasSegmentacionUrbanaCondominios"
+    ZONA_CENSAL = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
+    AEUS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS.dbf"
+    MZS_AEU="D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\MZS_AEU.dbf"
+    SECCIONES = "D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/EnumerarSecciones/TB_SECCIONES.shp"
+    TB_MZS_shp = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
+    Path_inicial = "\\\srv-fileserver\\CPV2017"
+    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+
+
+    for row in arcpy.da.SearchCursor(SECCIONES, ['UBIGEO', 'ZONA', 'SECCION','CANT_VIV'],where_expression):
+        where_expression1= ' "UBIGEO"=\''+str(row[0])+'\' AND "ZONA"=\''+str(row[1])+'\' AND SECCION=' +str(row[2])
+        where_expression_zona = ' "UBIGEO"=\'' + str(row[0]) + '\' AND "ZONA"=\'' + str(row[1]) + '\''
+
+        mxd = arcpy.mapping.MapDocument(r"D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/Mxd/CroquisSegmentacionUrbanoSecciones.mxd")
+        df = arcpy.mapping.ListDataFrames(mxd, "Layers")[0]
+        where_expression3=''
+
+
+        i = 0
+
+        aeu_inicial_temp=0
+        aeu_final_temp=0
+
+        data = []
+
+        for row2 in arcpy.da.SearchCursor(AEUS, ['AEU_FINAL'], where_expression1):
+            where_expression2 = ' "UBIGEO"=\'' + str(row[0]) + '\' AND "ZONA"=\'' + str(row[1]) + '\' AND AEU_FINAL='+str(row2[0])
+
+            if (i==0):
+                aeu_inicial_temp=int(row2[0])
+            else:
+                aeu_final_temp=int(row2[0])
+
+            i = 0
+
+
+
+
+            for row3 in arcpy.da.SearchCursor(MZS_AEU, ["UBIGEO", "ZONA", "MANZANA"], where_expression2):
+                data.append([str(row3[0]), str(row3[1]), str(row3[2])])
+
+
+        where_expression3 = UBIGEO.Expresion(data, ["UBIGEO", "ZONA", "MANZANA"])
+
+
+
+        ubigeo = str(row[0])
+        zona = UBIGEO.EtiquetaZona(str(row[1]))
+        seccion = "0"*(3-len(str(row[2])))+str(row[2])
+        aeu_inicial="0"*(3-len(str(aeu_inicial_temp)))+str(aeu_inicial_temp)
+        aeu_final = "0" * (3 - len(str(aeu_final_temp))) + str(aeu_final_temp)
+        cant_viv=str(int(row[3]))
+        arcpy.MakeFeatureLayer_management(SECCIONES,"secciones_1", where_expression1)
+        arcpy.MakeFeatureLayer_management(TB_MZS_shp, "manzanas", where_expression3)
+        lyrFile1 = arcpy.mapping.Layer("secciones_1")
+        lyrFile2 = arcpy.mapping.Layer("manzanas")
+        arcpy.ApplySymbologyFromLayer_management(lyrFile1,
+                                                 "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Layers/seccion.lyr")
+
+        arcpy.ApplySymbologyFromLayer_management(lyrFile2,
+                                             "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Layers/manzana_final.lyr")
+        arcpy.RefreshActiveView()
+        arcpy.mapping.AddLayer(df, lyrFile2)
+        arcpy.RefreshActiveView()
+        arcpy.mapping.AddLayer(df, lyrFile1)
+        arcpy.RefreshActiveView()
+
+        codigo=str(row[0]) + str(row[1]) + seccion
+
+
+        TextElement1 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCDD")[0]
+        TextElement2 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCPP")[0]
+        TextElement3 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCDI")[0]
+        TextElement4 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "DEPARTAMENTO")[0]
+        TextElement5 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "PROVINCIA")[0]
+        TextElement6 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "DISTRITO")[0]
+        TextElement7 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "NOMCCPP")[0]
+        TextElement8 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "ZONA")[0]
+        TextElement9 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION")[0]
+        TextElement10 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_INICIAL")[0]
+        TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_FINAL")[0]
+        TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CANT_VIV")[0]
+        TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
+        TextElement14 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
+
+        TextElement13.text = "*"+str(codigo)+"*"
+        TextElement14.text = "*"+str(codigo)+"*"
+        TextElement1.text = ubigeo[0:2]
+        TextElement2.text = ubigeo[2:4]
+        TextElement3.text = ubigeo[4:6]
+        TextElement8.text = zona
+        TextElement9.text = seccion
+        TextElement10.text = aeu_inicial
+        TextElement11.text = aeu_final
+        TextElement12.text = cant_viv
+        df.extent = lyrFile2.getSelectedExtent()
+        df.scale = df.scale *2
+
+
+        for row4 in arcpy.da.SearchCursor(ZONA_CENSAL, ['DEPARTAMEN','PROVINCIA','DISTRITO','NOMCCPP'],where_expression_zona):
+            TextElement4.text=str(row4[0])
+            TextElement5.text = row4[1]
+            TextElement6.text = row4[2]
+            TextElement7.text = row4[3]
+
+        out = Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]) + "\\" + codigo + ".pdf"
+        arcpy.mapping.ExportToPDF(mxd,out , "PAGE_LAYOUT")
+        arcpy.mapping.RemoveLayer(df, lyrFile1)
+        arcpy.mapping.RemoveLayer(df, lyrFile2)
+
+
+
+def ExportarCroquisUrbanoZona(where_expression):
+    arcpy.env.workspace ="D:/ShapesPruebasSegmentacionUrbanaCondominios"
+    ZONA_CENSAL = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
+    ZONA_AEU="D:/ShapesPruebasSegmentacionUrbanaCondominios/EnumerarSecciones/zona_aeu"
+    AEUS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS.dbf"
+    MZS_AEU="D:\\ShapesPruebasSegmentacionUrbanaCondominios\\AEU\\EnumerarAEUViviendas\\MZS_AEU.dbf"
+    SECCIONES = "D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/EnumerarSecciones/TB_SECCIONES.shp"
+    AEUS_LINEAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS_LINEAS.shp"
+    TB_MZS_shp = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
+    RUTAS_LINEAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_LINEAS.shp"
+    RUTAS_PUNTOS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_PUNTOS.shp"
+    Path_inicial = "\\\srv-fileserver\\CPV2017"
+    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+    for row in arcpy.da.SearchCursor(ZONA_CENSAL, ['UBIGEO', 'ZONA'], where_expression):
+        ubigeo=row[0]
+        zona=row[1]
+
+        where_inicial = ' "UBIGEO"=\'' + str(ubigeo) + '\' AND "ZONA"=\'' + str(zona) + '\''
+        print where_inicial
+        mxd = arcpy.mapping.MapDocument(r"D:/ShapesPruebasSegmentacionUrbanaCondominios/ZONAS/Mxd/CroquisSegmentacionUrbanoZonas.mxd")
+        df = arcpy.mapping.ListDataFrames(mxd, "Layers")[0]
+
+        arcpy.MakeFeatureLayer_management(ZONA_CENSAL, "zona_censal",where_inicial)
+        lyrFile1 = arcpy.mapping.Layer("zona_censal")
+        arcpy.ApplySymbologyFromLayer_management(lyrFile1,
+                                                 "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Layers/zonas.lyr")
+
+        i = 0
+        aeu_inicial_temp = 0
+        aeu_final_temp = 0
+
+        seccion_inicial_temp = 0
+        seccion_final_temp = 0
+
+
+        for row2 in arcpy.da.SearchCursor(RUTAS_LINEAS,
+                                          ['AEU_FINAL'], where_inicial):
+            aeu_temp = int(row2[0])
+            if (i == 0):
+                aeu_inicial_temp = aeu_temp
+                aeu_final_temp = aeu_temp
+            else:
+                if aeu_inicial_temp > aeu_temp:
+                    aeu_inicial_temp = aeu_temp
+
+                if aeu_final_temp < aeu_temp:
+                    aeu_final_temp = aeu_temp
+
+            i = i + 1
+        del row2
+
+        i = 0
+
+        cant_viv = 0
+
+        for row3 in arcpy.da.SearchCursor(SECCIONES,
+                                           ['SECCION', 'CANT_VIV'], where_inicial):
+            seccion_temp = int(row3[0])
+
+            if (i == 0):
+                seccion_inicial_temp = seccion_temp
+                seccion_final_temp = seccion_temp
+            else:
+                if seccion_inicial_temp > seccion_temp:
+                    seccion_inicial_temp = seccion_temp
+
+                if seccion_final_temp < seccion_temp:
+                    seccion_final_temp = seccion_temp
+
+            cant_viv = cant_viv + int(row3[1])
+            i = i + 1
+        del row3
+
+
+        aeu_inicial = "0" * (3 - len(str(aeu_inicial_temp))) + str(aeu_inicial_temp)
+        aeu_final = "0" * (3 - len(str(aeu_final_temp))) + str(aeu_final_temp)
+        seccion_inicial = "0" * (3 - len(str(seccion_inicial_temp))) + str(seccion_inicial_temp)
+        seccion_final = "0" * (3 - len(str(seccion_final_temp))) + str(seccion_final_temp)
+
+        codigo = str(ubigeo) + str(zona)
+        zona_etiqueta = UBIGEO.EtiquetaZona(zona)
+        TextElement1 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCDD")[0]
+        TextElement2 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCPP")[0]
+        TextElement3 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CCDI")[0]
+        TextElement4 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "DEPARTAMENTO")[0]
+        TextElement5 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "PROVINCIA")[0]
+        TextElement6 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "DISTRITO")[0]
+        TextElement7 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "NOMCCPP")[0]
+        TextElement8 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "ZONA")[0]
+        TextElement9 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION_INICIAL")[0]
+        TextElement13 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "SECCION_FINAL")[0]
+        TextElement10 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_INICIAL")[0]
+        TextElement11 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "AEU_FINAL")[0]
+        TextElement12 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "CANT_VIV")[0]
+        TextElement14 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "COD_BARRA")[0]
+        TextElement15 = arcpy.mapping.ListLayoutElements(mxd, "TEXT_ELEMENT", "TEXT_COD_BARRA")[0]
+        TextElement14.text = "*"+str(codigo)+"*"
+        TextElement15.text = "*"+str(codigo)+"*"
+
+        TextElement1.text = ubigeo[0:2]
+        TextElement2.text = ubigeo[2:4]
+        TextElement3.text = ubigeo[4:6]
+
+
+
+        TextElement8.text = zona_etiqueta
+        TextElement9.text = seccion_inicial
+        TextElement13.text = seccion_final
+        TextElement10.text = aeu_inicial
+        TextElement11.text = aeu_final
+        TextElement12.text = cant_viv
+
+        for row4 in arcpy.da.SearchCursor(ZONA_CENSAL, ['DEPARTAMEN', 'PROVINCIA', 'DISTRITO', 'NOMCCPP'], where_inicial):
+            TextElement4.text = str(row4[0])
+            TextElement5.text = row4[1]
+            TextElement6.text = row4[2]
+            TextElement7.text = row4[3]
+
+        arcpy.mapping.AddLayer(df, lyrFile1)
+        arcpy.RefreshActiveView()
+
+        df.extent = lyrFile1.getSelectedExtent()
+        df.scale = df.scale *1.2
+        out = Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]) + "\\" + codigo + ".pdf"
+        arcpy.mapping.ExportToPDF(mxd,out , "PAGE_LAYOUT")
+        arcpy.mapping.RemoveLayer(df, lyrFile1)
+        del mxd
+        del df
+
+    del row
+
+
+
 
 

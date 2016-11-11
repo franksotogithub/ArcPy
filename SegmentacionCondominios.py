@@ -1,36 +1,32 @@
-#import  SegmTabAEUCondominios
+import  SegmTabAEUCondominios
 #import  SegmTabSeccion
 #import  SegmTabExportarCroquis as CroquisTabular
 import  SegmEspAEUCondominios
-import SegmEspSeccionCondominios
-import SegmEspExportarCroquisCondominios as CroquisEsp
 import  datetime
 import  ConectionSQL as conx
 import  ImportarExportarSQL as ie
 from datetime import *
 import UBIGEO
 
-def Importar_Tablas(ubigeos):
-    #conx.ActualizarCantViviendasMzs(ubigeos)
-    conx.ActualizarCantViviendasMzsCondominios(ubigeos)
+
+def Importar_Tablas(data,campos):
+    conx.ActualizarCantViviendasMzsCondominios(data)
     print datetime.today()
-    #print "ActualizarCantViviendasMzs"
-    #print datetime.today()
-    #
-    #conx.ActualizarCampoMzCondominio(ubigeos)
-    
-    SegmEspAEUCondominios.ImportarTablasTrabajo(ubigeos)
+    conx.ActualizarCampoMzCondominio(data)
+    SegmEspAEUCondominios.ImportarTablasTrabajo(data,campos)
     print "ImportarTablasTrabajo"
     print datetime.today()
 
-def SegmentacionEspacial(ubigeos):
+
+def SegmentacionEspacial(data,campos):
+    where_expresion=UBIGEO.Expresion(data,campos)
     Ruta = "D:\ShapesPruebasSegmentacionUrbanaCondominios\AEU\MatrizAdyacencia"
     Lista_adyacencia = "lista_adyacencia.dbf"
-    print datetime.today()
-    SegmEspAEUCondominios.CrearMatrizAdyacencia(ubigeos)
+
+    SegmEspAEUCondominios.CrearMatrizAdyacencia(where_expresion)
     print "CrearMatrizAdyacencia"
     print datetime.today()
-
+    ##
     SegmEspAEUCondominios.ExportarTablasAdyacencia()
     print "ExportarTablasAdyacencia"
     print datetime.today()
@@ -41,313 +37,145 @@ def SegmentacionEspacial(ubigeos):
     ie.Importar_Lista_ADYACENCIA(Ruta, Lista_adyacencia)
     print "ImportarAdyacencia"
     print datetime.today()
+    #
     SegmEspAEUCondominios.CrearViviendasOrdenadas()
     print "CrearViviendasOrdenadas"
     print datetime.today()
-    SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos)
+    SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMayores16(where_expresion)
     print "EnumerarAEUEnViviendasDeManzanasCantVivMayores16"
     print datetime.today()
-    SegmEspAEUCondominios.AgruparManzanasCantVivMenoresIguales16(ubigeos)
+    SegmEspAEUCondominios.AgruparManzanasCantVivMenoresIguales16(where_expresion)
     print "AgruparManzanasCantVivMenoresIguales16"
     print datetime.today()
-    SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos)
+    SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(where_expresion)
     print "EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16"
     print datetime.today()
-    SegmEspAEUCondominios.CrearMZS_AEU(ubigeos)
+    SegmEspAEUCondominios.CrearMZS_AEU(where_expresion)
     print "CrearMZS_AEU"
+    print datetime.today()
+    ##
+    SegmEspAEUCondominios.CrearRutasPuntos()
+    print "CrearRutasPuntos"
+    print datetime.today()
+    SegmEspAEUCondominios.CrearViviendasCortes()
+    print "CrearViviendasCortes"
     print datetime.today()
     SegmEspAEUCondominios.CrearRutasPreparacion()
     print "CrearRutasPreparacion"
     print datetime.today()
-    SegmEspAEUCondominios.PrimeraViviendaPorAEU()
-    print "PrimeraViviendaPorAEU"
+    SegmEspAEUCondominios.RelacionarVerticeFinalInicioConAEUMax()
+    print "RelacionarVerticeFinalInicioConAEUMax"
     print datetime.today()
-    SegmEspAEUCondominios.SegundaViviendaPorAEU()
-    print "SegundaViviendaPorAEU"
+    SegmEspAEUCondominios.RelacionarRutasLineasConAEU()
+    print "RelacionarRutasLineasConAEU"
     print datetime.today()
-
-    SegmEspAEUCondominios.RelacionarRutasLineasConAEUSegundaVivienda()
-    print "RelacionarRutasLineasConAEUSegundaVivienda"
-    print datetime.today()
-
-    SegmEspAEUCondominios.ActualizarRutasViviendasMenoresIguales16()
-    print "ActualizarRutasViviendasMenoresIguales16"
-    print datetime.today()
-
-    SegmEspAEUCondominios.CrearLineasAEUFinal()
-    print "CrearLineasAEUFinal"
-    print datetime.today()
-
     SegmEspAEUCondominios.CrearTablaSegundaPasada()
     print "CrearTablaSegundaPasada"
     print datetime.today()
-
+    ####
+    ###
     SegmEspAEUCondominios.ActualizarRutasAEUSegundaPasada()
     print "ActualizarRutasAEUSegundaPasada"
     print datetime.today()
-
-    SegmEspAEUCondominios.Renumerar_AEU(ubigeos)
+    #####
+    ####
+    SegmEspAEUCondominios.Renumerar_AEU(where_expresion)
     print "Renumerar_AEU"
     print datetime.today()
-
+    #####
     SegmEspAEUCondominios.RenumerarRutas()
     print "RenumerarRutas"
     print datetime.today()
-
+    ###
+    ###
     SegmEspAEUCondominios.CrearTB_AEUS()
     print "CrearTB_AEUS"
     print datetime.today()
-
-    SegmEspAEUCondominios.CrearMarcosCroquis(ubigeos)
-    print "CrearMarcosCroquis"
-    print datetime.today()
-
-    SegmEspSeccionCondominios.EnumerarSecciones(ubigeos)
+    ###
+    SegmEspAEUCondominios.EnumerarSecciones(where_expresion)
     print "EnumerarSecciones"
     print datetime.today()
-
-    SegmEspSeccionCondominios.CrearSecciones(ubigeos)
+    SegmEspAEUCondominios.CrearSecciones(where_expresion)
     print "CrearSecciones"
-    print datetime.today()
-
-    SegmEspSeccionCondominios.CrearMarcosSecciones()
-    print "CrearMarcosSecciones"
-    print datetime.today()
-    SegmEspAEUCondominios.ModelarTablas(ubigeos)
+    SegmEspAEUCondominios.ModelarTablas(where_expresion)
     print "ModelarTablas"
-    print datetime.today()
-
-    conx.LimpiarRegistrosSegmentacionEspUbigeo(ubigeos)
-    print "LimpiarRegistros"
-    print datetime.today()
-    SegmEspAEUCondominios.InsertarRegistros(ubigeos)
+    conx.LimpiarRegistrosSegmentacionEspUbigeo(data)
+    print "LimpiarRegistrosSegmentacionEspUbigeo"
+    SegmEspAEUCondominios.InsertarRegistros(data)
     print "InsertarRegistros"
-    print datetime.today()
-    conx.ActualizarEstadoAEUSegmEsp(ubigeos)
+    conx.ActualizarEstadoAEUSegmEsp(data)
     print "ActualizarEstadoAEUSegmEsp"
+    # print datetime.today()
+    SegmEspAEUCondominios.CrearRutasMultipart()
+    print "CrearRutasMultipart"
     print datetime.today()
 
+def SegmentacionTabular(data,campos):
+    where_expresion=UBIGEO.Expresion(data,campos)
+    print datetime.today()
+    SegmTabAEUCondominios.CopiarTablas()
+    print "CopiarTablas"
+    print datetime.today()
+    SegmTabAEUCondominios.OrdenarManzanasFalsoCod()
+    print "OrdenarManzanasFalsoCod"
+    print datetime.today()
+    SegmTabAEUCondominios.CrearViviendasOrdenadas()
+    print "CrearViviendasOrdenadas"
+    print datetime.today()
+    SegmTabAEUCondominios.EnumerarAEUEnViviendasDeManzanas(where_expresion)
+    print "EnumerarAEUEnViviendasDeManzanas"
+    print datetime.today()
+    SegmTabAEUCondominios.CrearMZS_AEU(where_expresion)
+    print "CrearMZS_AEU"
+    print datetime.today()#
+    SegmTabAEUCondominios.RenumerarViviendasMzsMenores16(where_expresion)
+    print "RenumerarViviendasMzsMenores16"
+    print datetime.today()  #
+    SegmTabAEUCondominios.CrearRutasPuntos()
+    print "CrearRutasPuntos"
+    print datetime.today()  #
+    SegmTabAEUCondominios.CrearRutasPreparacion()
+    print "CrearRutasPreparacion"
+    print datetime.today()  #
+    SegmTabAEUCondominios.RelacionarVerticeFinalInicioConAEUMax()
+    print "RelacionarVerticeFinalInicioConAEUMax"
+    print datetime.today()  #
+    SegmTabAEUCondominios.RelacionarRutasLineasConAEU()
+    print "CrearRutasPreparacion"
+    print datetime.today()  #
+    SegmTabAEUCondominios.CrearTB_AEUS()
+    print "CrearTB_AEUS"
+    print datetime.today()  #
+    SegmTabAEUCondominios.EnumerarSecciones(where_expresion)
+    print "EnumerarSecciones"
+    print datetime.today()  #
+    SegmTabAEUCondominios.CrearSecciones(where_expresion)
+    print "EnumerarSecciones"
+    print datetime.today()  #
+    SegmTabAEUCondominios.CrearRutasMultipart()
+    print "CrearRutasMultipart"
+    print datetime.today()  #
+    SegmTabAEUCondominios.ModelarTablas(where_expresion)
+    print "ModelarTablas"
+    print datetime.today()  #
+    conx.LimpiarRegistrosSegmentacionTabularUbigeo(where_expresion)
+    SegmTabAEUCondominios.InsertarRegistros(where_expresion)
+    print "InsertarRegistros"
+    print datetime.today()  #
 
+def ExportarSegmEsp(data,campos):
+    SegmEspAEUCondominios.CrearCarpetas(data,campos)
+    where_expression = UBIGEO.Expresion(data, campos)
+    SegmEspAEUCondominios.ExportarCroquisUrbanoAEU(where_expression)
+    SegmEspAEUCondominios.ExportarCroquisUrbanoSeccion(where_expression)
+    SegmTabAEUCondominios.ExportarCroquisUrbanoZona(where_expression)
 
-#def SegmentacionTabular(ubigeos):
-#    print datetime.today()
-#    SegmTabAEU.CopiarTablas()
-#    print "CopiarTablas"
-#    print datetime.today()
-#    SegmTabAEU.OrdenarManzanasFalsoCod()
-#    print "OrdenarManzanasFalsoCod"
-#    print datetime.today()
-#    SegmTabAEU.CrearViviendasOrdenadas()
-#    print "CrearViviendasOrdenadas"
-#    print datetime.today()
-#    SegmTabAEU.EnumerarAEUEnViviendasDeManzanas(ubigeos)
-#    print "EnumerarAEUEnViviendasDeManzanas"
-#    print datetime.today()
-#    SegmTabAEU.CrearMZS_AEU(ubigeos)
-#    print "CrearMZS_AEU"
-#    print datetime.today()#
-#
-#    SegmTabAEU.RenumerarViviendasMzsMenores16(ubigeos)
-#    print "RenumerarViviendasMzsMenores16"
-#    print datetime.today()  #
-#
-#    SegmTabAEU.CrearRutasPreparacion(ubigeos)
-#    print "CrearRutasPreparacion"
-#    print datetime.today()
-#    SegmTabAEU.PrimeraViviendaPorAEU()
-#    print "PrimeraViviendaPorAEU"
-#    print datetime.today()
-#    SegmTabAEU.SegundaViviendaPorAEU()
-#    print "SegundaViviendaPorAEU"
-#    print datetime.today()
-#    SegmTabAEU.RelacionarRutasLineasConAEUSegundaVivienda()
-#    print "RelacionarRutasLineasConAEUSegundaVivienda"
-#    print datetime.today()
-#    SegmTabAEU.ActualizarRutasViviendasMenoresIguales16()
-#    print "ActualizarRutasViviendasMenoresIguales16"
-#    print datetime.today()
-#    SegmTabAEU.CrearLineasAEUFinal()
-#    print "CrearLineasAEUFinal"
-#    print datetime.today()
-#    SegmTabAEU.CrearTB_AEUS()
-#    print "CrearTB_AEUS"
-#    print datetime.today()
-#    SegmTabAEU.CrearMarcosCroquis(ubigeos)
-#    print "CrearMarcosCroquis"
-#    print datetime.today()
-#    SegmTabSeccion.EnumerarSecciones(ubigeos)
-#    print "EnumerarSecciones"
-#    print datetime.today()
-#    SegmTabSeccion.CrearSecciones(ubigeos)
-#    print "CrearSecciones"
-#    print datetime.today()
-#    SegmTabSeccion.CrearMarcosSecciones()
-#    print "CrearMarcosSecciones"
-#    print datetime.today()
-#    SegmTabAEU.ModelarTablas(ubigeos)
-#    print "ModelarTablas"
-#    print datetime.today()
-#    conx.LimpiarRegistrosSegmentacionTabularUbigeo(ubigeos)
-#    print "LimpiarRegistros"
-#    print datetime.today()
-#    SegmTabAEU.InsertarRegistros(ubigeos)
-#    print "InsertarRegistros"
-#    print datetime.today()
-#    conx.ActualizarEstadoAEUSegmTab(ubigeos)
-#    print "ActualizarEstadoAEUSegmTab"
-#    print datetime.today()
-#def ExportarSegmTab(ubigeos):
-#    for ubigeo in ubigeos:
-#        CroquisTabular.CrearCarpetasCroquisSegmTab([ubigeo])
-#        CroquisTabular.ExportarCroquisUrbanoAEU([ubigeo])
-#        CroquisTabular.ExportarCroquisUrbanoSeccion([ubigeo])
-#        CroquisTabular.ExportarCroquisUrbanoZona([ubigeo])
-def ExportarSegmEsp(ubigeos):
-    for ubigeo in ubigeos:
-        CroquisEsp.CrearCarpetasCroquisSegmEsp([ubigeo])
-        CroquisEsp.ExportarCroquisUrbanoAEU([ubigeo])
-        #CroquisEsp.ExportarCroquisUrbanoSeccion([ubigeo])
-        #CroquisEsp.ExportarCroquisUrbanoZona([ubigeo])
-
-
-
-
-ubigeos=["150116",
-
-]
-
-#data=[
-##['150116','00100'],
-#['150116','00200'],
-#['150116','00400'],
-##['150116','00500'],
-#]
-#campos=['UBIGEO','ZONA']
-#
-#
-
-Importar_Tablas(ubigeos)
-Ruta = "D:\ShapesPruebasSegmentacionUrbanaCondominios\AEU\MatrizAdyacencia"
-Lista_adyacencia = "lista_adyacencia.dbf"
-print datetime.today()
-#
-SegmEspAEUCondominios.CrearMatrizAdyacencia(ubigeos)
-print "CrearMatrizAdyacencia"
-print datetime.today()
-##
-SegmEspAEUCondominios.ExportarTablasAdyacencia()
-print "ExportarTablasAdyacencia"
-print datetime.today()
-
-
-####conx.InsertarAdyacencia()
-print "InsertarAdyacencia"
-print datetime.today()
-ie.Importar_Lista_ADYACENCIA(Ruta, Lista_adyacencia)
-print "ImportarAdyacencia"
-print datetime.today()
-#
-##
-##
-SegmEspAEUCondominios.CrearViviendasOrdenadas()
-print "CrearViviendasOrdenadas"
-print datetime.today()
-SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMayores16(ubigeos)
-print "EnumerarAEUEnViviendasDeManzanasCantVivMayores16"
-print datetime.today()
-SegmEspAEUCondominios.AgruparManzanasCantVivMenoresIguales16(ubigeos)
-print "AgruparManzanasCantVivMenoresIguales16"
-print datetime.today()
-SegmEspAEUCondominios.EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16(ubigeos)
-print "EnumerarAEUEnViviendasDeManzanasCantVivMenoresIguales16"
-print datetime.today()
-SegmEspAEUCondominios.CrearMZS_AEU(ubigeos)
-print "CrearMZS_AEU"
-print datetime.today()
-##
-##
-SegmEspAEUCondominios.CrearRutasPuntos()
-print "CrearRutasPuntos"
-print datetime.today()
-SegmEspAEUCondominios.CrearViviendasCortes()
-print "CrearViviendasCortes"
-print datetime.today()
-SegmEspAEUCondominios.CrearRutasPreparacion()
-print "CrearRutasPreparacion"
-print datetime.today()
-SegmEspAEUCondominios.RelacionarVerticeFinalInicioConAEUMax()
-print "RelacionarVerticeFinalInicioConAEUMax"
-print datetime.today()
-###
-###
-SegmEspAEUCondominios.RelacionarRutasLineasConAEU()
-print "RelacionarRutasLineasConAEU"
-print datetime.today()
-##
-##
-###
-###
-SegmEspAEUCondominios.CrearTablaSegundaPasada()
-print "CrearTablaSegundaPasada"
-print datetime.today()
-####
-###
-SegmEspAEUCondominios.ActualizarRutasAEUSegundaPasada()
-print "ActualizarRutasAEUSegundaPasada"
-print datetime.today()
-#####
-####
-SegmEspAEUCondominios.Renumerar_AEU(ubigeos)
-print "Renumerar_AEU"
-print datetime.today()
-#####
-SegmEspAEUCondominios.RenumerarRutas()
-print "RenumerarRutas"
-print datetime.today()
-###
-###
-SegmEspAEUCondominios.CrearTB_AEUS()
-print "CrearTB_AEUS"
-print datetime.today()
-###
-SegmEspSeccionCondominios.EnumerarSecciones(ubigeos)
-print "EnumerarSecciones"
-print datetime.today()
-###
-###
-SegmEspAEUCondominios.CrearRutasMultipart()
-####
-###
-SegmEspSeccionCondominios.CrearSecciones(ubigeos)
-##
-SegmEspAEUCondominios.ModelarTablas(ubigeos)
-###
-#conx.LimpiarRegistrosSegmentacionEspUbigeo(ubigeos)
-#
-#
-conx.LimpiarRegistrosSegmentacionEspUbigeo(ubigeos)
-#
-#ubigeos=["150116"]
-SegmEspAEUCondominios.InsertarRegistros(ubigeos)
-print "InsertarRegistros"
-conx.ActualizarEstadoAEUSegmEsp(ubigeos)
-print "ActualizarEstadoAEUSegmEsp"
-#print datetime.today()
-
-data=[
-   #     ['150116','00100'],
-         ['150116','00200'],
-   #     ['150116', '00400'],
-   #     ['150116', '00500'],
-]
-campos=['UBIGEO','ZONA']
-
-#CroquisEsp.ExportarCroquisUrbanoAEU(UBIGEO.Expresion(data,campos))
-#CroquisEsp.ExportarCroquisUrbanoSeccion(UBIGEO.Expresion(data,campos))
-#
-#CroquisEsp.ExportarCroquisUrbanoZona(UBIGEO.Expresion(data,campos))
-
-
+def ExportarSegmTab(data,campos):
+    SegmTabAEUCondominios.CrearCarpetas(data,campos)
+    where_expression = UBIGEO.Expresion(data, campos)
+    SegmTabAEUCondominios.ExportarCroquisUrbanoAEU(where_expression)
+    SegmTabAEUCondominios.ExportarCroquisUrbanoSeccion(where_expression)
+    SegmTabAEUCondominios.ExportarCroquisUrbanoZona(where_expression)
 
 
 

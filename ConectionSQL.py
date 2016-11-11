@@ -1,12 +1,15 @@
 import pymssql
-
-def ActualizarCantViviendasMzs():
-
+def Conexion():
     server = "192.168.200.250"
     user = "sde"
     password = "$deDEs4Rr0lLo"
 
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+    connx = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+    return connx
+
+
+def ActualizarCantViviendasMzs():
+    conn=Conexion()
     cursor = conn.cursor()
     cursor.execute("""
     exec ACTUALIZAR_CANTIDAD_VIVIENDAS
@@ -14,120 +17,51 @@ def ActualizarCantViviendasMzs():
     conn.commit()
     conn.close()
 
-def ActualizarCantViviendasMzsCondominios(ubigeos):
+def ActualizarCantViviendasMzsCondominios(data):
     server = "192.168.200.250"
     user = "sde"
     password = "$deDEs4Rr0lLo"
 
     conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
     cursor = conn.cursor()
-    for row in ubigeos:
-        sql_query = """
-        exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}'
-        """.format(ubigeo=str(row), zona="99999")
-        cursor.execute(sql_query)
+
+
+    for row in data:
+        if len(row) == 1:
+            sql_query = """
+            exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}' '{zona}'
+            """.format(ubigeo=str(row[0]), zona="99999")
+            cursor.execute(sql_query)
+        elif len(row) == 2:
+            sql_query = """
+            exec ACTUALIZAR_CANTIDAD_VIVIENDAS_CONDOMINIOS '{ubigeo}' '{zona}'
+                """.format(ubigeo=str(row[0]), zona=str(row[1]))
+            cursor.execute(sql_query)
+
         conn.commit()
     conn.close()
 
 
-
-def ActualizarCampoMzCondominio(ubigeos):
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+def ActualizarCampoMzCondominio(data):
+    conn = Conexion()
     cursor = conn.cursor()
+    for row in data:
+        if len(row) == 1:
+            sql_query = """
+                exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}' '{zona}'
+                """.format(ubigeo=str(row), zona="99999")
+            cursor.execute(sql_query)
+            conn.commit()
+        elif len(row) == 2:
+            sql_query = """
+            exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}' '{zona}'
+                """.format(ubigeo=str(row[0]), zona=str(row[1]))
+            cursor.execute(sql_query)
 
-    for row in ubigeos:
-        sql_query = """
-        exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}'
-        """.format(ubigeo=str(row), zona="99999")
-        cursor.execute(sql_query)
         conn.commit()
     conn.close()
 
 
-def ActualizarTipoVivienda():
-
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
-    cursor.execute("""
-    exec ACTUALIZAR_TIPO_VIVIENDA
-    """)
-    conn.commit()
-    conn.close()
-
-def InsertarAdyacencia():
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
-    cursor.execute("""
-    exec INSERTAR_LISTA_ADYACENCIA
-    """)
-    conn.commit()
-    conn.close()
-
-def InsertarAEUMayores16():
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
-    cursor.execute("""
-    exec INSERTAR_AEU_MANZANAS_MAYORES_16V
-    """)
-    conn.commit()
-    conn.close()
-
-def ActualizarCortes():
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
-    cursor.execute("""
-    exec ACTUALIZAR_CORTES_MANZANA_MAYORES_16V
-    """)
-    conn.commit()
-    conn.close()
-
-def ActualizarOrdenViviendas():
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
-    cursor.execute("""
-    exec ACTUALIZAR_ORDEN_VIVIENDAS
-    """)
-    conn.commit()
-    conn.close()
-
-
-
-def InsertarAEUMenores16():
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
-    cursor.execute("""
-    exec INSERTAR_AEU_MANZANAS_MENORES_16V
-    """)
-    conn.commit()
-    conn.close()
 
 def Actualizar_MZS_AEU():
     server = "192.168.200.250"
@@ -142,98 +76,115 @@ def Actualizar_MZS_AEU():
     conn.commit()
     conn.close()
 
-def ActualizarAEUManzanasIgual0():
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
 
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+def LimpiarRegistrosSegmentacionTabularUbigeo(data):
+    conn = Conexion()
+    cursor = conn.cursor()
+
+    for row in data:
+        if len(row) == 1:
+            sql_query = """
+            exec LIMPIAR_REGISTROS_SEGM_TAB '{ubigeo}','{zona}'
+            """.format(ubigeo=str(row[0]), zona="99999")
+            cursor.execute(sql_query)
+        elif len(row) == 2:
+            sql_query = """
+                exec LIMPIAR_REGISTROS_SEGM_TAB '{ubigeo}','{zona}'
+                """.format(ubigeo=str(row[0]), zona=str(row[1]))
+            cursor.execute(sql_query)
+
+        conn.commit()
+    conn.close()
+
+
+def InsertarAdyacencia():
+    conn = Conexion()
     cursor = conn.cursor()
     cursor.execute("""
-        exec ACTUALIZA_AEU_MZS_VIV_IGUAL_0
-        """)
+    exec INSERTAR_LISTA_ADYACENCIA
+    """)
     conn.commit()
     conn.close()
 
-def LimpiarRegistrosSegmentacionTabularUbigeo(ubigeos):
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+def LimpiarRegistrosSegmentacionEspUbigeo(data):
+    conn = Conexion()
     cursor = conn.cursor()
 
-    for row in ubigeos:
-        sql_query="""
-        exec LIMPIAR_REGISTROS_SEGM_TAB '{ubigeo}','{zona}'
-        """.format(ubigeo=str(row),zona="99999")
-        cursor.execute(sql_query)
+    for row in data:
+
+        if len(row)==1:
+            sql_query="""
+            exec LIMPIAR_REGISTROS_SEGM_ESP '{ubigeo}','{zona}'
+            """.format(ubigeo=str(row[0]),zona="99999")
+            cursor.execute(sql_query)
+        elif len(row)==2:
+            sql_query = """
+                exec LIMPIAR_REGISTROS_SEGM_ESP '{ubigeo}','{zona}'
+                """.format(ubigeo=str(row[0]), zona=str(row[1]))
+            cursor.execute(sql_query)
+
         conn.commit()
     conn.close()
 
 
-def LimpiarRegistrosSegmentacionEspUbigeo(ubigeos):
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
 
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+def LimpiarRegistrosMatrizAdyacencia(data):
+    conn = Conexion()
     cursor = conn.cursor()
 
-    for row in ubigeos:
-        sql_query="""
-        exec LIMPIAR_REGISTROS_SEGM_ESP '{ubigeo}','{zona}'
-        """.format(ubigeo=str(row),zona="99999")
-        cursor.execute(sql_query)
-        conn.commit()
-    conn.close()
+    for row in data:
+        if len(row)==1:
+            sql_query="""
+            exec LIMPIAR_REGISTROS_MATRIZ_ADYACENCIA '{ubigeo}','{zona}'
+            """.format(ubigeo=str(row[0]),zona="99999")
+            cursor.execute(sql_query)
+        elif len(row)==2:
+            sql_query = """
+                exec LIMPIAR_REGISTROS_MATRIZ_ADYACENCIA '{ubigeo}','{zona}'
+                """.format(ubigeo=str(row[0]), zona=str(row[1]))
+            cursor.execute(sql_query)
 
-def LimpiarRegistrosMatrizAdyacencia(ubigeos):
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
-
-    for row in ubigeos:
-        sql_query="""
-        exec LIMPIAR_REGISTROS_MATRIZ_ADYACENCIA '{ubigeo}','{zona}'
-        """.format(ubigeo=str(row),zona="99999")
-        cursor.execute(sql_query)
         conn.commit()
     conn.close()
 
 
-def ActualizarEstadoAEUSegmEsp(ubigeos):
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
+def ActualizarEstadoAEUSegmEsp(data):
+    conn = Conexion()
     cursor = conn.cursor()
+    for row in data:
+        if len(row) == 1:
+            sql_query = """
+            exec ACTUALIZAR_ESTADO_AEU_SEGM_ESP '{ubigeo}','{zona}'
+            """.format(ubigeo=str(row[0]), zona="99999")
+            cursor.execute(sql_query)
+        elif len(row) == 2:
+            sql_query = """
+                exec ACTUALIZAR_ESTADO_AEU_SEGM_ESP '{ubigeo}','{zona}'
+                """.format(ubigeo=str(row[0]), zona=str(row[1]))
+            cursor.execute(sql_query)
 
-    for row in ubigeos:
-        sql_query="""
-        exec ACTUALIZAR_ESTADO_AEU_SEGM_ESP '{ubigeo}','{zona}'
-        """.format(ubigeo=str(row),zona="99999")
-        cursor.execute(sql_query)
         conn.commit()
     conn.close()
 
-def ActualizarEstadoAEUSegmTab(ubigeos):
-    server = "192.168.200.250"
-    user = "sde"
-    password = "$deDEs4Rr0lLo"
-    conn = pymssql.connect(server, user, password, "CPV_SEGMENTACION")
-    cursor = conn.cursor()
 
-    for row in ubigeos:
-        sql_query="""
-        exec ACTUALIZAR_ESTADO_AEU_SEGM_TAB '{ubigeo}','{zona}'
-        """.format(ubigeo=str(row),zona="99999")
-        cursor.execute(sql_query)
+
+def ActualizarEstadoAEUSegmTab(data):
+    conn = Conexion()
+    cursor = conn.cursor()
+    for row in data:
+        if len(row) == 1:
+            sql_query = """
+            exec ACTUALIZAR_ESTADO_AEU_SEGM_TAB '{ubigeo}','{zona}'
+            """.format(ubigeo=str(row[0]), zona="99999")
+            cursor.execute(sql_query)
+        elif len(row) == 2:
+            sql_query = """
+                exec ACTUALIZAR_ESTADO_AEU_SEGM_TAB '{ubigeo}','{zona}'
+                """.format(ubigeo=str(row[0]), zona=str(row[1]))
+            cursor.execute(sql_query)
+
         conn.commit()
     conn.close()
-
 
 
 
