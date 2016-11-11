@@ -180,15 +180,14 @@ def ExportarSegmTab(data,campos):
     SegmTabAEUCondominios.ExportarCroquisUrbanoSeccion(where_expression)
     SegmTabAEUCondominios.ExportarCroquisUrbanoZona(where_expression)
 
+#data=[["030602"]]
+#campos=["UBIGEO"]
 
-
-
-data=[["030602"]]
-campos=["UBIGEO"]
 #Importar_Tablas(data,campos)
 #SegmentacionEspacial(data,campos)
+#SegmentacionTabular(data,campos)
 
-SegmentacionTabular(data,campos)
-
+#ExportarSegmEsp(data,campos)
+#ExportarSegmTab(data,campos)
 
 

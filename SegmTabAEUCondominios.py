@@ -1382,10 +1382,8 @@ def CrearCarpetas(data,campos):
             if os.path.exists(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1])) == False:
                 os.mkdir(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
             else:
-                lista_directorios = os.listdir(Path_urbano + "\\" + str(el[0]) + "\\" + str(el[1]))
-                if (len(lista_directorios) > 0):
-                    for archivo in lista_directorios:
-                        shutil.rmtree(Path_urbano + "\\" + str(el[0]) + "\\" + str(el[1]) + "\\" + str(archivo))
+                shutil.rmtree(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
+                os.mkdir(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
     del row
 
 

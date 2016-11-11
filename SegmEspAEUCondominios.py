@@ -2897,10 +2897,10 @@ def CrearCarpetas(data,campos):
     ZONAS = r"D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"
     Path_inicial = "\\\srv-fileserver\\CPV2017"
 
-    if os.path.exists(Path_inicial + "\\croquis_segm_seg") == False:
-        os.mkdir(Path_inicial + "\\croquis_segm_seg")
+    if os.path.exists(Path_inicial + "\\croquis_segm_esp") == False:
+        os.mkdir(Path_inicial + "\\croquis_segm_esp")
 
-    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+    Path_urbano = Path_inicial + "\\croquis_segm_esp\\urbano"
 
     if os.path.exists(Path_urbano) == False:
         os.mkdir(Path_urbano)
@@ -2917,10 +2917,14 @@ def CrearCarpetas(data,campos):
             if os.path.exists(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1])) == False:
                 os.mkdir(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
             else:
-                lista_directorios = os.listdir(Path_urbano + "\\" + str(el[0]) + "\\" + str(el[1]))
-                if (len(lista_directorios) > 0):
-                    for archivo in lista_directorios:
-                        shutil.rmtree(Path_urbano + "\\" + str(el[0]) + "\\" + str(el[1])+"\\"+str(archivo))
+
+                shutil.rmtree(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
+                os.mkdir(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
+                #lista_directorios = os.listdir(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
+                #if (len(lista_directorios) > 0):
+                    #for archivo in lista_directorios:
+                        #print 	os.path.abspath(archivo)
+                        #shutil.rmtree(Path_urbano + "\\" + str(row[0]) + "\\" + str(row[1]))
     del row
 
 
@@ -2940,7 +2944,7 @@ def ExportarCroquisUrbanoAEU(where_expression):
     TB_EJES_VIALES="D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_EJES_VIALES.shp"
     
     Path_inicial = "\\\srv-fileserver\\CPV2017"
-    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+    Path_urbano = Path_inicial + "\\croquis_segm_esp\\urbano"
     #print where_expression
     for row in arcpy.da.SearchCursor(AEUS, ["UBIGEO", "ZONA",  "AEU_FINAL","CANT_VIV","CODCCPP","SECCION"],where_expression):
         where_expression2 = ' "UBIGEO"=\'' + str(row[0]) + '\' AND "ZONA" =\'' + str(row[1]) + '\' AND AEU_FINAL=' + str(row[2])
@@ -3080,7 +3084,7 @@ def ExportarCroquisUrbanoSeccion(where_expression):
     SECCIONES = "D:/ShapesPruebasSegmentacionUrbanaCondominios/SECCIONES/EnumerarSecciones/TB_SECCIONES.shp"
     TB_MZS_shp = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS.shp"
     Path_inicial = "\\\srv-fileserver\\CPV2017"
-    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+    Path_urbano = Path_inicial + "\\croquis_segm_esp\\urbano"
 
 
     for row in arcpy.da.SearchCursor(SECCIONES, ['UBIGEO', 'ZONA', 'SECCION','CANT_VIV'],where_expression):
@@ -3198,7 +3202,7 @@ def ExportarCroquisUrbanoZona(where_expression):
     RUTAS_LINEAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_LINEAS.shp"
     RUTAS_PUNTOS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_PUNTOS.shp"
     Path_inicial = "\\\srv-fileserver\\CPV2017"
-    Path_urbano = Path_inicial + "\\croquis_segm_seg\\urbano"
+    Path_urbano = Path_inicial + "\\croquis_segm_esp\\urbano"
     for row in arcpy.da.SearchCursor(ZONA_CENSAL, ['UBIGEO', 'ZONA'], where_expression):
         ubigeo=row[0]
         zona=row[1]
