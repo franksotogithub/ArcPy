@@ -13,6 +13,7 @@ def Importar_Tablas(data,campos):
     conx.ActualizarCantViviendasMzsCondominios(data)
     print datetime.today()
     conx.ActualizarCampoMzCondominio(data)
+    print datetime.today()
     SegmEspAEUCondominios.ImportarTablasTrabajo(data,campos)
     print "ImportarTablasTrabajo"
     print datetime.today()
@@ -22,7 +23,6 @@ def SegmentacionEspacial(data,campos):
     where_expresion=UBIGEO.Expresion(data,campos)
     Ruta = "D:\ShapesPruebasSegmentacionUrbanaCondominios\AEU\MatrizAdyacencia"
     Lista_adyacencia = "lista_adyacencia.dbf"
-
     SegmEspAEUCondominios.CrearMatrizAdyacencia(where_expresion)
     print "CrearMatrizAdyacencia"
     print datetime.today()
@@ -101,11 +101,12 @@ def SegmentacionEspacial(data,campos):
     print "ModelarTablas"
     conx.LimpiarRegistrosSegmentacionEspUbigeo(data)
     print "LimpiarRegistrosSegmentacionEspUbigeo"
-    SegmEspAEUCondominios.InsertarRegistros(data)
+
+    SegmEspAEUCondominios.InsertarRegistros(where_expresion)
     print "InsertarRegistros"
     conx.ActualizarEstadoAEUSegmEsp(data)
     print "ActualizarEstadoAEUSegmEsp"
-    # print datetime.today()
+    print datetime.today()
     SegmEspAEUCondominios.CrearRutasMultipart()
     print "CrearRutasMultipart"
     print datetime.today()
@@ -133,6 +134,7 @@ def SegmentacionTabular(data,campos):
     print datetime.today()  #
     SegmTabAEUCondominios.CrearRutasPuntos()
     print "CrearRutasPuntos"
+    SegmTabAEUCondominios.CrearViviendasCortes()
     print datetime.today()  #
     SegmTabAEUCondominios.CrearRutasPreparacion()
     print "CrearRutasPreparacion"
@@ -150,7 +152,7 @@ def SegmentacionTabular(data,campos):
     print "EnumerarSecciones"
     print datetime.today()  #
     SegmTabAEUCondominios.CrearSecciones(where_expresion)
-    print "EnumerarSecciones"
+    print "CrearSecciones"
     print datetime.today()  #
     SegmTabAEUCondominios.CrearRutasMultipart()
     print "CrearRutasMultipart"
@@ -158,10 +160,11 @@ def SegmentacionTabular(data,campos):
     SegmTabAEUCondominios.ModelarTablas(where_expresion)
     print "ModelarTablas"
     print datetime.today()  #
-    conx.LimpiarRegistrosSegmentacionTabularUbigeo(where_expresion)
+    conx.LimpiarRegistrosSegmentacionTabularUbigeo(data)
     SegmTabAEUCondominios.InsertarRegistros(where_expresion)
     print "InsertarRegistros"
     print datetime.today()  #
+    conx.ActualizarEstadoAEUSegmTab(data)
 
 def ExportarSegmEsp(data,campos):
     SegmEspAEUCondominios.CrearCarpetas(data,campos)
@@ -180,10 +183,12 @@ def ExportarSegmTab(data,campos):
 
 
 
+data=[["030602"]]
+campos=["UBIGEO"]
+#Importar_Tablas(data,campos)
+#SegmentacionEspacial(data,campos)
 
-
-
-
+SegmentacionTabular(data,campos)
 
 
 

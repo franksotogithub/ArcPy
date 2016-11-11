@@ -47,14 +47,17 @@ def ActualizarCampoMzCondominio(data):
     cursor = conn.cursor()
     for row in data:
         if len(row) == 1:
+
             sql_query = """
-                exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}' '{zona}'
-                """.format(ubigeo=str(row), zona="99999")
+                exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}', '{zona}'
+                """.format(ubigeo=str(row[0]), zona="99999")
             cursor.execute(sql_query)
             conn.commit()
         elif len(row) == 2:
+
+
             sql_query = """
-            exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}' '{zona}'
+            exec ACTUALIZAR_CAMPO_MZS_CONDOMINIO '{ubigeo}', '{zona}'
                 """.format(ubigeo=str(row[0]), zona=str(row[1]))
             cursor.execute(sql_query)
 

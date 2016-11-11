@@ -16,7 +16,7 @@ def CopiarTablas():
            ["D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS.shp","D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS.shp"],
            ["D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp","D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/EnumerarAEUViviendas/TB_ZONA_CENSAL.shp"],
            ["D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS_CONDOMINIOS.dbf",
-            "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/EnumerarAEUViviendas/TB_MZS_CONDOMINIOS.dbf"],
+            "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/EnumerarAEUViviendas/TB_MZS_CONDOMINIOS.dbf"],
            ["D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/PuntosInicio/PUNTOS_INICIO.shp","D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/PuntosInicio/PUNTOS_INICIO.shp"],
 
           ]
@@ -386,6 +386,110 @@ def CrearMZS_AEU(where_expression):
     arcpy.Delete_management(MZS_AEU_2)
 
 
+def CrearViviendasCortes():
+    arcpy.env.overwriteOutput = True
+    VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
+    VIVIENDAS_AEU_OR_MAX_Stadistics = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/VIVIENDAS_AEU_OR_MAX_Stadistics"
+    VIVIENDAS_MZS_OR_MAX_Stadistics = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/VIVIENDAS_MZS_OR_MAX_Stadistics"
+    VIVIENDAS_AEU_OR_MAX = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/VIVIENDAS_AEU_OR_MAX.shp"
+    VIVIENDAS_MZS_OR_MAX = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/VIVIENDAS_MZS_OR_MAX.shp"
+
+    TB_VIVIENDAS_CORTES_shp = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/TB_VIVIENDAS_CORTES.shp"
+
+    where_expression_l = "FLG_MZ=1 AND P29<>6"
+    arcpy.MakeFeatureLayer_management(VIVIENDAS_ORDENADAS, "viviendas_ordenadas", where_expression_l)
+
+
+    ########################calculando el ID de viviendas###########################################
+    arcpy.AddField_management("viviendas_ordenadas", "ID_VIV", "TEXT")
+    arcpy.CalculateField_management("viviendas_ordenadas", "ID_VIV", "!UBIGEO!+!ZONA!+!MANZANA!+str(!ID_REG_OR!)",
+                                    "PYTHON_9.3")
+
+    ##############Calculando los puntos maximos de cada AEU##########################################
+    arcpy.Statistics_analysis("viviendas_ordenadas", VIVIENDAS_AEU_OR_MAX_Stadistics, [["ID_REG_OR", "MAX"]],
+                              ["UBIGEO", "ZONA", "MANZANA", "AEU"])
+
+    arcpy.AddField_management(VIVIENDAS_AEU_OR_MAX_Stadistics, "ID_VIV", "TEXT")
+    arcpy.CalculateField_management(VIVIENDAS_AEU_OR_MAX_Stadistics, "ID_VIV", "!UBIGEO!+!ZONA!+!MANZANA!+str(int(!MAX_ID_REG_OR!))",
+                                    "PYTHON_9.3")
+
+    arcpy.AddJoin_management("viviendas_ordenadas","ID_VIV",VIVIENDAS_AEU_OR_MAX_Stadistics,"ID_VIV","KEEP_COMMON")
+
+    arcpy.CopyFeatures_management("viviendas_ordenadas",VIVIENDAS_AEU_OR_MAX)
+
+    add_fields=[["UBIGEO","TEXT"],["CODCCPP","TEXT"],["ZONA","TEXT"],["MANZANA","TEXT"],["AEU","SHORT"],["ID_REG_OR","SHORT"]]
+
+    calculate_fields = [["UBIGEO", "!TB_VIVIE_1!"], ["CODCCPP", "!TB_VIVIE_2!"], ["ZONA", "!TB_VIVIE_3!"],
+                        ["MANZANA", "!TB_VIVIE_4!"], ["AEU", "!TB_VIVI_19!"],["ID_REG_OR","!TB_VIVI_12!"]]
+
+
+    for el in add_fields:
+        arcpy.AddField_management(VIVIENDAS_AEU_OR_MAX,el[0],el[1])
+
+    for el in calculate_fields:
+        arcpy.CalculateField_management(VIVIENDAS_AEU_OR_MAX,el[0],el[1],"PYTHON_9.3")
+
+    delete_fields = ["TB_VIVIEND", "viviendas_", "viviendas1"]
+
+    for el in range(1, 10):
+        delete_fields.append("TB_VIVIE_" + str(el))
+
+    for el in range(10, 24):
+        delete_fields.append("TB_VIVI_" + str(el))
+
+    for el in range(1, 8):
+        delete_fields.append("vivienda_" + str(el))
+
+    arcpy.DeleteField_management(VIVIENDAS_AEU_OR_MAX, delete_fields)
+
+    ##############Calculando los puntos maximos de cada Manzana##########################################
+    where_expression_l = "FLG_MZ=1 AND P29<>6"
+    arcpy.MakeFeatureLayer_management(VIVIENDAS_ORDENADAS, "viviendas_ordenadas2", where_expression_l)
+
+
+    arcpy.Statistics_analysis("viviendas_ordenadas2", VIVIENDAS_MZS_OR_MAX_Stadistics, [["ID_REG_OR", "MAX"]],
+                              ["UBIGEO", "ZONA", "MANZANA"])
+
+    arcpy.AddField_management(VIVIENDAS_MZS_OR_MAX_Stadistics, "ID_VIV", "TEXT")
+    arcpy.CalculateField_management(VIVIENDAS_MZS_OR_MAX_Stadistics, "ID_VIV", "!UBIGEO!+!ZONA!+!MANZANA!+str(int(!MAX_ID_REG_OR!))",
+                                    "PYTHON_9.3")
+
+
+    arcpy.AddJoin_management("viviendas_ordenadas2","ID_VIV",VIVIENDAS_MZS_OR_MAX_Stadistics,"ID_VIV","KEEP_COMMON")
+
+
+    arcpy.CopyFeatures_management("viviendas_ordenadas2",VIVIENDAS_MZS_OR_MAX)
+
+    add_fields = [["UBIGEO", "TEXT"], ["CODCCPP", "TEXT"], ["ZONA", "TEXT"], ["MANZANA", "TEXT"], ["AEU", "SHORT"],["ID_REG_OR","SHORT"]]
+    calculate_fields = [["UBIGEO", "!TB_VIVIE_1!"], ["CODCCPP", "!TB_VIVIE_2!"], ["ZONA", "!TB_VIVIE_3!"],
+                        ["MANZANA", "!TB_VIVIE_4!"], ["AEU", "!TB_VIVI_19!"],["ID_REG_OR", "!TB_VIVI_12!"]]
+
+
+    for el in add_fields:
+        arcpy.AddField_management(VIVIENDAS_MZS_OR_MAX,el[0],el[1])
+
+    for el in calculate_fields:
+        arcpy.CalculateField_management(VIVIENDAS_MZS_OR_MAX,el[0],el[1],"PYTHON_9.3")
+
+    delete_fields = ["TB_VIVIEND", "viviendas_", "viviendas1"]
+
+    for el in range(1, 10):
+        delete_fields.append("TB_VIVIE_" + str(el))
+
+    for el in range(10, 24):
+        delete_fields.append("TB_VIVI_" + str(el))
+
+    for el in range(1, 8):
+        delete_fields.append("vivienda_" + str(el))
+
+    #arcpy.DeleteField_management(VIVIENDAS_MZS_OR_MAX, delete_fields)
+
+
+    arcpy.Delete_management("viviendas_ordenas")
+    arcpy.Delete_management("viviendas_ordenas2")
+    ######################################Diferencia Simetrica######################
+
+    arcpy.SymDiff_analysis(VIVIENDAS_AEU_OR_MAX, VIVIENDAS_MZS_OR_MAX,TB_VIVIENDAS_CORTES_shp)
 
 
 def RenumerarViviendasMzsMenores16(where_expression):
@@ -437,10 +541,8 @@ def RenumerarViviendasMzsMenores16(where_expression):
 
 
 
-
 def CrearRutasPuntos():
     arcpy.env.overwriteOutput = True
-
     TB_RUTAS_PUNTOS = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_PUNTOS.shp"
     VIVIENDAS_ORDENADAS = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/EnumerarAEUViviendas/TB_VIVIENDAS_ORDENADAS.shp"
     PUERTAS_VIVIENDAS_MULTIFAMILIAR = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/TB_PUERTAS_VIVIENDAS_MULTIFAMILIAR.shp"
@@ -450,9 +552,7 @@ def CrearRutasPuntos():
     TB_RUTAS_PUNTOS_CANT_AEU_IGUAL_1 = "D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_PUNTOS_CANT_AEU_IGUAL_1"
     TB_RUTAS_PUNTOS_AEU_IDENTICOS="D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_PUNTOS_AEU_IDENTICOS"
     TB_RUTAS_PUNTOS_MIN_SELECT="D:/ShapesPruebasSegmentacionUrbanaTabularCondominios/AEU/CrearRepresentacionAEU/TB_RUTAS_PUNTOS_MIN_SELECT.shp"
-
     spatial_reference = arcpy.Describe(VIVIENDAS_ORDENADAS).spatialReference
-
     where = "P29=6"
     where2 = "P29M=1 OR P29M=3"
     arcpy.Select_analysis(VIVIENDAS_ORDENADAS, PUERTAS_VIVIENDAS_MULTIFAMILIAR, where)
@@ -1255,7 +1355,6 @@ def InsertarRegistros(where_list):
 
     for el in list_deletelayer:
         arcpy.Delete_management(el)
-
 
 
 def CrearCarpetas(data,campos):

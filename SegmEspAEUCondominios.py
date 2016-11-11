@@ -2668,7 +2668,7 @@ def ModelarTablas(ubigeos):
 
     arcpy.CalculateField_management(SECCIONES, "LLAVE_SECC", expression, "PYTHON_9.3")
 
-def InsertarRegistros(ubigeos):
+def InsertarRegistros(where_list):
     arcpy.env.workspace = "Database Connections/PruebaSegmentacion.sde"
     TB_AEUS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS.dbf"
     TB_AEUS_LINEAS = "D:/ShapesPruebasSegmentacionUrbanaCondominios/AEU/Renumerar/TB_AEUS_LINEAS.shp"
@@ -2688,7 +2688,9 @@ def InsertarRegistros(ubigeos):
     SEGM_ESP_MARCO_AEU = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_MARCO_AEU"
     SEGM_ESP_MARCO_SECCION = "Database Connections/PruebaSegmentacion.sde/CPV_SEGMENTACION.sde.SEGM_ESP_MARCO_SECCION"
 
-    where_list = UBIGEO.ExpresionUbigeos(ubigeos)
+
+    print where_list
+    #where_list = UBIGEO.ExpresionUbigeos(ubigeos)
    # where_list2 = UBIGEO.ExpresionUbigeos(int(ubigeos))
     arcpy.MakeFeatureLayer_management(TB_VIVIENDAS_ORDENADAS, "tb_viviendas_ordenadas", where_list)
     arcpy.MakeFeatureLayer_management(TB_SECCIONES, "tb_secciones", where_list)
